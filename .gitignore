@@ -1,0 +1,38 @@
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Go
+*.test
+*.out
+vendor/
+dist/
+
+# Node / Tauri
+node_modules/
+apps/desktop/node_modules/
+apps/desktop/src-tauri/target/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Eniac
+.eniac/mirror/
+.eniac/cache/
+.eniac/history.db
+*.log
+
+# Env
+.env
+*.env.local
