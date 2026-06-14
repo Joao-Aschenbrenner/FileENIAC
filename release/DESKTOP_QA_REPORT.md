@@ -23,7 +23,7 @@
 
 | Item | Status | Notas |
 |------|--------|-------|
-| Abrir pelo Menu Iniciar | ✅ | Atalho: `eniac.exe native` em `%LOCALAPPDATA%\ENIAC Workspace` |
+| Abrir pelo Menu Iniciar | ✅ | Atalho: `eniac.exe native` em `%LOCALAPPDATA%\FileENIAC` |
 | Abrir pelo atalho Desktop | ✅ | Atalho criado (task `desktopicon`) |
 | Abrir via CLI | ✅ | `eniac native --help` exibe documentação correta |
 | Não abre navegador | ✅ | `native.go` — zero chamadas a `openBrowser()` |

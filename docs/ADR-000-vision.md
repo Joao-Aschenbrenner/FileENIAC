@@ -1,4 +1,4 @@
-# ADR-000: ENIAC Workspace — Visão do Produto
+# ADR-000: FileENIAC — Visão do Produto
 
 ## Status
 APROVADO
@@ -10,7 +10,7 @@ APROVADO
 O projeto nasceu como uma ferramenta de deploy FTP (eniac-deploy) para resolver problemas de publicação em hosting compartilhado HostGator. Durante o desenvolvimento, ficou evidente que o problema real não é deploy, mas sim a falta de rastreabilidade e sincronização entre workspace local, GitHub e servidor.
 
 ## Decisão
-O produto evolui para **ENIAC Workspace**: uma plataforma única para gerenciamento de workspace local, repositórios Git, GitHub, deploys, FTPS, histórico, auditoria, monitoramento e integração com IA.
+O produto evolui para **FileENIAC**: uma plataforma única para gerenciamento de workspace local, repositórios Git, GitHub, deploys, FTPS, histórico, auditoria, monitoramento e integração com IA.
 
 ## Princípios
 1. **Fonte da verdade = Git** — nunca utilizar o servidor como fonte da verdade

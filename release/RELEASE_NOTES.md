@@ -1,4 +1,4 @@
-# ENIAC Workspace RC1
+# FileENIAC RC1
 
 **Versão:** 1.0.0-rc1
 **Data:** 2026-06-13
@@ -9,22 +9,22 @@
 
 | Arquivo | Tamanho | SHA256 |
 |---------|---------|--------|
-| `eniac.exe` | 18.1 MB | `11ef7c322d1bdd1e3602e2c5bde7c4c5158f36c2abe7f8602072d337246ea9b7` |
-| `ENIAC Workspace.exe` | 19.8 MB | `788cf85fdd9125d6cc4af74f95b83ab870fa9e6278d18bfaaa31b3dbabd3cb26` |
-| `ENIAC_Workspace_Setup.exe` | 13.6 MB | `dab02fa33c068e2b499e71b0c4fe3da23bc76ae692cfdb5544badd5e0c07b672` |
+| `fileeniac.exe` | 18.1 MB | `11ef7c322d1bdd1e3602e2c5bde7c4c5158f36c2abe7f8602072d337246ea9b7` |
+| `FileENIAC.exe` | 19.8 MB | `788cf85fdd9125d6cc4af74f95b83ab870fa9e6278d18bfaaa31b3dbabd3cb26` |
+| `FileENIAC_Setup.exe` | 13.6 MB | `dab02fa33c068e2b499e71b0c4fe3da23bc76ae692cfdb5544badd5e0c07b672` |
 | `WebView2Loader.dll` | 160 KB | `8427b1fc58ec707813e5c0a51eb5d69397bb333250a7b891be4d3b123f1e0f1c` |
 | `icon.ico` | 2.8 KB | `e0eca73f7f5b71ceffed9067d107b16521022b14abb49c442689a452d4e81234` |
 
 ## O que há de novo
 
 ### P0 — Native Desktop Mode
-- `eniac native` comando agora usa **exclusivamente** a janela Tauri (WebView2)
+- `fileeniac native` comando agora usa **exclusivamente** a janela Tauri (WebView2)
 - Nenhum navegador é aberto — nem como fallback
 - Tauri carrega frontend embedado, IPC (`invoke`) funciona nativamente
 
 ### P0 — Dynamic Port
 - Backend usa `:0` (porta aleatória)
-- Porta real propagada via `ENIAC_API_PORT` para o processo Tauri
+- Porta real propagada via `FILEENIAC_API_PORT` para o processo Tauri
 - Frontend descobre porta via `invoke("get_api_port")`
 - Nenhuma URL fixa `localhost:8080` hardcoded
 
@@ -46,11 +46,11 @@
 - Botão "Procurar" (folder picker nativo) com `tauri-plugin-dialog`
 
 ### Sprint 9.2 — Auto-update
-- `eniac version` exibe v0.2.0
-- `eniac update-from <path>` — detecta `{installDir}/update/`, faz backup, substitui e reinicia
+- `fileeniac version` exibe v0.2.0
+- `fileeniac update-from <path>` — detecta `{installDir}/update/`, faz backup, substitui e reinicia
 
 ### Sprint 9.2 — Instalador sem admin
-- `DefaultDirName={localappdata}\ENIAC Workspace`
+- `DefaultDirName={localappdata}\FileENIAC`
 - `PrivilegesRequired=none`
 - Registry em HKCU
 
@@ -73,19 +73,19 @@
 
 ```powershell
 # Instalar
-ENIAC_Workspace_Setup.exe
+FileENIAC_Setup.exe
 
 # Iniciar (janela nativa)
-eniac native
+fileeniac native
 
 # Iniciar (navegador, fallback)
-eniac desktop
+fileeniac desktop
 
 # Apenas servidor API
-eniac serve
+fileeniac serve
 
 # Verificar versão
-eniac version
+fileeniac version
 ```
 
 ## Build
@@ -95,7 +95,7 @@ eniac version
 cd backend
 $env:CGO_ENABLED=1
 $env:CC='C:\msys64\ucrt64\bin\gcc.exe'
-go build -ldflags="-linkmode=internal" -o ..\build\eniac.exe .
+go build -ldflags="-linkmode=internal" -o ..\build\fileeniac.exe .
 
 # Desktop (Tauri)
 cd apps/desktop

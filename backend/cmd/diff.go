@@ -24,7 +24,7 @@ var diffLocalMirrorCmd = &cobra.Command{
 			project = args[0]
 		}
 		if project == "" {
-			fmt.Println("Uso: eniac diff local-mirror --project <name>")
+			fmt.Println("Uso: fileeniac diff local-mirror --project <name>")
 			return
 		}
 
@@ -72,7 +72,7 @@ var diffStatusCmd = &cobra.Command{
 			project = args[0]
 		}
 		if project == "" {
-			fmt.Println("Uso: eniac diff status --project <name>")
+			fmt.Println("Uso: fileeniac diff status --project <name>")
 			return
 		}
 

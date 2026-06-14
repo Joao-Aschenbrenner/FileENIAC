@@ -22,7 +22,7 @@ import (
 
 func TestFullEndToEndFlow(t *testing.T) {
 	tmpDir := t.TempDir()
-	wsPath := filepath.Join(tmpDir, "eniac-ws")
+	wsPath := filepath.Join(tmpDir, "fileeniac-ws")
 	localProject := filepath.Join(tmpDir, "meu-projeto")
 
 	// Create project directory with sample files

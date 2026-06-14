@@ -41,7 +41,7 @@ var configGetCmd = &cobra.Command{
 			return
 		}
 		if strings.HasPrefix(key, "workspace.") {
-			log.L().Sugar().Fatalf("Use 'eniac config set' to modify workspace.%s", key)
+			log.L().Sugar().Fatalf("Use 'fileeniac config set' to modify workspace.%s", key)
 		}
 
 		value, err := ctx.DB.GetSetting(key)

@@ -90,7 +90,7 @@ func (s *Service) Deploy(ctx *workspace.Context, projectName string, useFallback
 		zap.Bool("fallback", useFallback),
 	)
 
-	tmpArtifact := filepath.Join(os.TempDir(), fmt.Sprintf("eniac-deploy-%s.tar.gz", deployID))
+	tmpArtifact := filepath.Join(os.TempDir(), fmt.Sprintf("fileeniac-deploy-%s.tar.gz", deployID))
 
 	// Cleanup temp artifact on function exit
 	defer func() {
@@ -242,7 +242,7 @@ func (s *Service) Rollback(ctx *workspace.Context, projectName string) (*Result,
 		}
 		client := newFTPClientFn(ftpsCfg)
 		if err := client.Connect(); err == nil {
-			artifactName := fmt.Sprintf("eniac-deploy-%s.tar.gz", lastDeploy.DeployID)
+			artifactName := fmt.Sprintf("fileeniac-deploy-%s.tar.gz", lastDeploy.DeployID)
 			remoteArtifactPath := server.TargetPath + "/" + artifactName
 			manifestPath := server.TargetPath + "/deploy-manifest.json"
 

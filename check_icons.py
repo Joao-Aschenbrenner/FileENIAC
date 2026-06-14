@@ -2,7 +2,7 @@ from PIL import Image
 import io
 
 # Read icon.ico
-with open('C:/Users/USUARIO/Documents/GitWrkspc/eniac-workspace/apps/desktop/src-tauri/icons/icon.ico', 'rb') as f:
+with open('C:/Users/USUARIO/Documents/GitWrkspc/FileENIAC/apps/desktop/src-tauri/icons/icon.ico', 'rb') as f:
     ico_data = f.read()
 
 ico = Image.open(io.BytesIO(ico_data))
@@ -16,7 +16,7 @@ while True:
         break
 
 # Check icon.png
-png = Image.open('C:/Users/USUARIO/Documents/GitWrkspc/eniac-workspace/apps/desktop/src-tauri/icons/icon.png')
+png = Image.open('C:/Users/USUARIO/Documents/GitWrkspc/FileENIAC/apps/desktop/src-tauri/icons/icon.png')
 print(f'icon.png: {png.size} mode={png.mode}')
 # Check center pixel
 cx, cy = 256, 256  # center of 512x512

@@ -29,7 +29,7 @@ func CheckAndApply() bool {
 		return false
 	}
 
-	updateExe := filepath.Join(updateDir, "eniac.exe")
+	updateExe := filepath.Join(updateDir, "fileeniac.exe")
 	if _, err := os.Stat(updateExe); os.IsNotExist(err) {
 		log.L().Debug("nenhuma atualizacao encontrada em", zap.String("dir", updateDir))
 		return false
@@ -51,7 +51,7 @@ func CheckAndApply() bool {
 		return false
 	}
 
-	files := []string{"eniac.exe", "FileENIAC.exe", "WebView2Loader.dll"}
+	files := []string{"fileeniac.exe", "FileENIAC.exe", "WebView2Loader.dll"}
 	for _, f := range files {
 		src := filepath.Join(installDir, f)
 		if _, err := os.Stat(src); err == nil {
@@ -62,14 +62,14 @@ func CheckAndApply() bool {
 		}
 	}
 
-	oldExe := filepath.Join(installDir, "eniac.exe.old")
+	oldExe := filepath.Join(installDir, "fileeniac.exe.old")
 	os.Remove(oldExe)
 
 	if err := os.Rename(exe, oldExe); err != nil {
-		log.L().Error("falha ao renomear eniac.exe atual", zap.Error(err))
+		log.L().Error("falha ao renomear fileeniac.exe atual", zap.Error(err))
 		return false
 	}
-	log.L().Info("eniac.exe renomeado para eniac.exe.old")
+	log.L().Info("fileeniac.exe renomeado para fileeniac.exe.old")
 
 	updateFiles := map[string]string{
 		"FileENIAC.exe":  updateTauri,
@@ -88,10 +88,10 @@ func CheckAndApply() bool {
 	}
 
 	if err := copyFile(updateExe, exe); err != nil {
-		log.L().Error("falha ao copiar novo eniac.exe", zap.Error(err))
+		log.L().Error("falha ao copiar novo fileeniac.exe", zap.Error(err))
 		return false
 	}
-	log.L().Info("novo eniac.exe copiado")
+	log.L().Info("novo fileeniac.exe copiado")
 
 	log.L().Info("atualizacao concluida. backup salvo em " + backupDir)
 

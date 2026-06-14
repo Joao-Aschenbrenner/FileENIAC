@@ -27,7 +27,7 @@ apps/desktop/src-tauri/target/
 .DS_Store
 Thumbs.db
 
-# Eniac
+# FileENIAC
 .eniac/mirror/
 .eniac/cache/
 .eniac/history.db

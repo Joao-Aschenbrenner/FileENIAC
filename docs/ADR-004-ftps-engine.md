@@ -7,7 +7,7 @@ APROVADO
 2026-06-10
 
 ## Contexto
-O deploy para hosting compartilhado (HostGator) exige FTPS com TLS explícito na porta 21. O eniac-deploy (PoC) já implementa esse transporte. Agora a engine deve ser modular e reutilizável dentro da arquitetura ENIAC Workspace.
+O deploy para hosting compartilhado (HostGator) exige FTPS com TLS explícito na porta 21. O eniac-deploy (PoC) já implementa esse transporte. Agora a engine deve ser modular e reutilizável dentro da arquitetura FileENIAC.
 
 ## Decisão
 O FTPS Engine é um módulo interno responsável APENAS pela camada de transporte. Toda orquestração (pack, mirror, manifest, rollback) fica no Deploy Engine.

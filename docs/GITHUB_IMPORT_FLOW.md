@@ -1,7 +1,7 @@
 # GitHub Import Flow
 
 ## Visão Geral
-Fluxo completo de descoberta, importação e clonagem de repositórios GitHub para o ENIAC Workspace.
+Fluxo completo de descoberta, importação e clonagem de repositórios GitHub para o FileENIAC.
 
 ## Pré-requisitos
 - Token GitHub com escopos: `repo`, `read:org`

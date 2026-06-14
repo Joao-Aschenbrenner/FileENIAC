@@ -3,13 +3,13 @@ cd /d %~dp0\..
 
 :: Backend (Go)
 echo Testing backend with dynamic port discovery...
-start /b cmd /c "backend\eniac.exe serve --debug"
+start /b cmd /c "backend\fileeniac.exe serve --debug"
 
 timeout /t 2
 
 :: Check backend
 curl -s http://localhost/api/health || (
-    echo [ERROR] Backend offline — 'eniac serve' failed.
+    echo [ERROR] Backend offline — 'fileeniac serve' failed.
     echo Check API on http://localhost/ with:
     netstat -ano | findstr LISTEN | findstr :0
     goto :error
@@ -20,5 +20,5 @@ echo -------------------------------------------------
 goto :eof
 
 :error
-echo [ERROR] Backend offline. Run 'eniac serve' before desktop.
+echo [ERROR] Backend offline. Run 'fileeniac serve' before desktop.
 pause

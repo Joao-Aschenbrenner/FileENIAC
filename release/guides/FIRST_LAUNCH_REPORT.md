@@ -20,16 +20,16 @@
 | 1.1 | Executar `ENIAC_Workspace_Setup.exe` | Instalador UAC não pede admin | |
 | 1.2 | Clicar "Next > Next > Install" | Barra de progresso completa | |
 | 1.3 | Clicar "Finish" | Janela fecha | |
-| 1.4 | Verificar Iniciar Menu | Atalho "ENIAC Workspace" existe | |
-| 1.5 | Verificar Desktop | Atalho "ENIAC Workspace" existe | |
-| 1.6 | Verificar `%LOCALAPPDATA%\ENIAC Workspace\` | `eniac.exe` + `ENIAC Workspace.exe` + `WebView2Loader.dll` existem | |
+| 1.4 | Verificar Iniciar Menu | Atalho "FileENIAC" existe | |
+| 1.5 | Verificar Desktop | Atalho "FileENIAC" existe | |
+| 1.6 | Verificar `%LOCALAPPDATA%\FileENIAC\` | `eniac.exe` + `FileENIAC.exe` + `WebView2Loader.dll` existem | |
 
 ## Passo 2 — Primeiro Launch via Atalho
 
 | # | Ação | Resultado Esperado | ✅ / ❌ |
 |---|------|-------------------|---------|
-| 2.1 | Dar duplo clique no atalho "ENIAC Workspace" | Janela Tauri abre em <5s | |
-| 2.2 | Verificar título da janela | "ENIAC Workspace" | |
+| 2.1 | Dar duplo clique no atalho "FileENIAC" | Janela Tauri abre em <5s | |
+| 2.2 | Verificar título da janela | "FileENIAC" | |
 | 2.3 | Verificar tamanho | ~1100x720 (não maximizada) | |
 | 2.4 | Verificar se navegador padrão NÃO abriu | Nenhuma janela/aba do Edge/Chrome | |
 | 2.5 | Verificar console do WebView2 (F12) | Sem erros vermelhos | |

@@ -19,9 +19,9 @@ var fromPath string
 
 var UpdateCmd = &cobra.Command{
 	Use:   "update-from [path]",
-	Short: "Atualizar eniac a partir de um novo binÃ¡rio",
-	Long: `Substitui o binÃ¡rio eniac atual por um novo binÃ¡rio.
-Uso: eniac update-from C:\caminho\para\novo\eniac.exe
+	Short: "Atualizar fileeniac a partir de um novo binÃ¡rio",
+	Long: `Substitui o binÃ¡rio fileeniac atual por um novo binÃ¡rio.
+Uso: fileeniac update-from C:\caminho\para\novo\fileeniac.exe
 
 O comando fecha o app nativo se estiver rodando, copia o novo binÃ¡rio
 sobre o atual no diretÃ³rio de instalaÃ§Ã£o, e pergunta se deseja reiniciar.`,
@@ -50,7 +50,7 @@ sobre o atual no diretÃ³rio de instalaÃ§Ã£o, e pergunta se deseja reinicia
 			return fmt.Errorf("arquivo vazio: %s", from)
 		}
 
-		log.L().Info("atualizando eniac",
+		log.L().Info("atualizando fileeniac",
 			zap.String("de", from),
 			zap.String("para", exe),
 		)
@@ -73,9 +73,9 @@ sobre o atual no diretÃ³rio de instalaÃ§Ã£o, e pergunta se deseja reinicia
 			return fmt.Errorf("erro ao copiar novo binÃ¡rio: %w", err)
 		}
 
-		log.L().Info("eniac atualizado (backup salvo em " + backup + ")")
+		log.L().Info("fileeniac atualizado (backup salvo em " + backup + ")")
 
-		fmt.Println("eniac atualizado com sucesso!")
+		fmt.Println("fileeniac atualizado com sucesso!")
 		fmt.Println("Backup salvo em:", backup)
 		fmt.Println()
 		fmt.Print("Deseja reiniciar o app agora? (s/N): ")
@@ -86,7 +86,7 @@ sobre o atual no diretÃ³rio de instalaÃ§Ã£o, e pergunta se deseja reinicia
 		if resp == "s" || resp == "S" {
 			launchNative(exe, nativeExe)
 		} else {
-			fmt.Println("Reinicie manualmente com: eniac native")
+			fmt.Println("Reinicie manualmente com: fileeniac native")
 		}
 
 		return nil

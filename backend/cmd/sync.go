@@ -25,7 +25,7 @@ var syncPlanCmd = &cobra.Command{
 			project = args[0]
 		}
 		if project == "" {
-			fmt.Println("Uso: eniac sync plan --project <name>")
+			fmt.Println("Uso: fileeniac sync plan --project <name>")
 			return
 		}
 
@@ -70,7 +70,7 @@ var syncApplyCmd = &cobra.Command{
 			project = args[0]
 		}
 		if project == "" {
-			fmt.Println("Uso: eniac sync apply --project <name>")
+			fmt.Println("Uso: fileeniac sync apply --project <name>")
 			return
 		}
 
@@ -135,7 +135,7 @@ var syncReconcileCmd = &cobra.Command{
 			project = args[0]
 		}
 		if project == "" {
-			fmt.Println("Uso: eniac sync reconcile --project <name> --status <status>")
+			fmt.Println("Uso: fileeniac sync reconcile --project <name> --status <status>")
 			return
 		}
 		if status == "" {

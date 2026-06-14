@@ -26,7 +26,7 @@ Criar um módulo **Project Registry** responsável por:
 ### Estrutura do registro
 ```json
 {
-  "workspace": "ENIAC",
+  "workspace": "FileENIAC",
   "version": 1,
   "projects": {
     "simple-finance": {
@@ -55,11 +55,11 @@ Criar um módulo **Project Registry** responsável por:
 
 ### Comandos CLI
 ```
-eniac-workspace registry list
-eniac-workspace registry add <name> --path <path>
-eniac-workspace registry remove <name>
-eniac-workspace registry sync    # Detecta projetos não registrados
-eniac-workspace registry doctor  # Verifica integridade do registro
+fileeniac registry list
+fileeniac registry add <name> --path <path>
+fileeniac registry remove <name>
+fileeniac registry sync    # Detecta projetos não registrados
+fileeniac registry doctor  # Verifica integridade do registro
 ```
 
 ## Consequências

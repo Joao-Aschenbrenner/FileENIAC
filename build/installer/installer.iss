@@ -5,7 +5,7 @@
 #define MyAppVersion "1.0.0-rc1"
 #define MyAppPublisher "ENIAC Systems"
 #define MyAppURL "https://github.com/ENIACSystems/FileENIAC"
-#define MyAppExeName "eniac.exe"
+#define MyAppExeName "fileeniac.exe"
 #define AppIdValue "{E8A1B2C3-D4F5-6789-0ABC-DEF012345678}"
 
 [Setup]
@@ -43,7 +43,7 @@ Name: "desktopicon"; Description: "Criar atalho na &Area de Trabalho"; GroupDesc
 Name: "addtopath"; Description: "Adicionar ao &PATH do sistema"; GroupDescription: "Configuracao:"; Flags: checkedonce
 
 [Files]
-Source: "..\bin\eniac.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\bin\fileeniac.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\bin\FileENIAC.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\runtime\WebView2Loader.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "icon.ico"; DestDir: "{app}"; Flags: ignoreversion

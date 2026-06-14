@@ -9,7 +9,7 @@
 
 ## Instruções para o Testador
 
-"Você vai testar o ENIAC Workspace — uma ferramenta para gerenciar deploys de sites. 
+"Você vai testar o FileENIAC — uma ferramenta para gerenciar deploys de sites. 
 Você tem um projeto web (HTML/CSS/JS) e precisa colocá-lo online em um servidor. 
 Use a ferramenta para fazer isso do início ao fim, sem pedir ajuda.
 
@@ -27,7 +27,7 @@ Não tenha pena — seja brutalmente honesto."
 ## Tarefas
 
 ### Tarefa 1: Instalação
-"Instale o ENIAC Workspace no seu computador."
+"Instale o FileENIAC no seu computador."
 
 | Tempo | Dificuldade | Observação |
 |-------|-------------|------------|

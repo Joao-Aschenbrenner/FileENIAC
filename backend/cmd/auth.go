@@ -70,7 +70,7 @@ var authStatusCmd = &cobra.Command{
 		encToken, err := ctx.DB.GetSetting(gitHubTokenKey)
 		if err != nil {
 			fmt.Println("Not authenticated with GitHub")
-			fmt.Println("Run 'eniac auth login --token <token>' to authenticate")
+			fmt.Println("Run 'fileeniac auth login --token <token>' to authenticate")
 			return
 		}
 

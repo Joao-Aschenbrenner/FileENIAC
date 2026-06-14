@@ -1,6 +1,6 @@
 # RC1 FINAL VALIDATION REPORT
 
-**Projeto:** ENIAC Workspace
+**Projeto:** FileENIAC
 **Versão:** v0.2.0 (RC1)
 **Data:** 2026-06-13
 **Status:** ✅ TÉCNICO APROVADO — 🖥️ AGUARDANDO E2E MANUAL
@@ -9,7 +9,7 @@
 
 ## Sumário Executivo
 
-O RC1 do ENIAC Workspace foi construído, empacotado, instalado e validado tecnicamente. Todas as auditorias de código, build estático, endpoints API, CLI e persistência foram aprovadas.
+O RC1 do FileENIAC foi construído, empacotado, instalado e validado tecnicamente. Todas as auditorias de código, build estático, endpoints API, CLI e persistência foram aprovadas.
 
 O único gate restante é o teste E2E manual em máquina com display gráfico, que requer:
 - Janela Tauri (WebView2)
@@ -24,10 +24,10 @@ O único gate restante é o teste E2E manual em máquina com display gráfico, q
 ```
 build/
 ├── eniac.exe                  ✅ 28 MB  (standalone, UCRT only)
-├── ENIAC Workspace.exe        ✅ 19 MB  (Tauri WebView2 app)
+├── FileENIAC.exe              ✅ 19 MB  (Tauri WebView2 app)
 ├── WebView2Loader.dll         ✅ 157 KB (WebView2 runtime)
 ├── icon.ico                   ✅ 2.8 KB (7 sizes 16-256px)
-├── ENIAC_Workspace_Setup.exe  ✅ 13.6 MB (Inno Setup, LZMA2)
+├── FileENIAC_Setup.exe        ✅ 13.6 MB (Inno Setup, LZMA2)
 ├── SHA256SUMS                 ✅ Checksums SHA-256
 └── installer.iss              ✅ Script fonte
 
@@ -80,7 +80,7 @@ release/
 
 | # | Critério | Dependência | Procedimento |
 |---|----------|-------------|--------------|
-| 2b | **Janela Desktop abre** | Display | Executar `eniac native` — verificar janela Tauri |
+| 2b | **Janela Desktop abre** | Display | Executar `fileeniac native` — verificar janela Tauri |
 | 3b | **WebView2 renderiza** | Display | Verificar React, Sidebar, CSS |
 | 3c | **Sem tela branca** | Display | Navegar entre todas as 17 rotas |
 | 4b | **Frontend descobre porta** | Display + Tauri | Verificar `initApiClient()` no console |
@@ -110,7 +110,7 @@ release/
 ### P0 — Dynamic Port
 - **Alterado**: `:8080` → `:0` como default
 - **Adicionado**: `ListenDynamic()` com `net.Listen("tcp", ":0")`
-- **Adicionado**: `ENIAC_API_PORT` env var propagada para Tauri
+- **Adicionado**: `FILEENIAC_API_PORT` env var propagada para Tauri
 - **Adicionado**: `get_api_port()` comando Rust
 - **Adicionado**: `initApiClient()` no frontend (invoke discover)
 
@@ -141,13 +141,13 @@ release/
 
 ```powershell
 # 1. Instalar
-.\ENIAC_Workspace_Setup.exe
+.\FileENIAC_Setup.exe
 
 # 2. Iniciar (janela nativa)
-eniac native
+fileeniac native
 
 # 3. Verificar
-- Janela Tauri abre (1100x720, título "ENIAC Workspace")
+- Janela Tauri abre (1100x720, título "FileENIAC")
 - Sidebar visível com todas as rotas
 - Sem erros no console do WebView2 (F12)
 

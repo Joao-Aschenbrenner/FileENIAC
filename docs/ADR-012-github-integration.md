@@ -4,7 +4,7 @@
 Aprovado
 
 ## Contexto
-O ENIAC Workspace precisa se integrar ao GitHub para descobrir, importar e configurar repositórios automaticamente. Atualmente a configuração de projetos é manual e repetitiva.
+O FileENIAC precisa se integrar ao GitHub para descobrir, importar e configurar repositórios automaticamente. Atualmente a configuração de projetos é manual e repetitiva.
 
 ## Decisão
 Adotar integração com GitHub via Personal Access Token (classic) utilizando a API REST v3.

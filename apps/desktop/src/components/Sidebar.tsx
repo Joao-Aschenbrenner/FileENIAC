@@ -18,8 +18,8 @@ export default function Sidebar() {
   return (
     <aside className="w-60 bg-eniac-900 text-white flex flex-col">
       <div className="p-4 border-b border-eniac-700">
-        <h1 className="text-lg font-bold tracking-tight">ENIAC</h1>
-        <p className="text-xs text-eniac-300 mt-0.5">Workspace Desktop</p>
+        <h1 className="text-lg font-bold tracking-tight">FileENIAC</h1>
+        <p className="text-xs text-eniac-300 mt-0.5">Desktop</p>
       </div>
       <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
         {links.map((link) => (

@@ -76,7 +76,7 @@ Nao abre o navegador - usa uma janela de aplicativo real.`,
 		}
 
 		_, portStr, _ := strings.Cut(actualAddr, ":")
-		os.Setenv("ENIAC_API_PORT", portStr)
+		os.Setenv("FILEENIAC_API_PORT", portStr)
 
 		ctx := workspace.Active()
 		if ctx != nil {
@@ -90,7 +90,7 @@ Nao abre o navegador - usa uma janela de aplicativo real.`,
 		time.AfterFunc(800*time.Millisecond, func() {
 			log.L().Info("abrindo aplicativo desktop nativo", zap.String("path", tauriPath))
 			c := exec.Command(tauriPath)
-			c.Env = append(os.Environ(), fmt.Sprintf("ENIAC_API_PORT=%s", portStr))
+			c.Env = append(os.Environ(), fmt.Sprintf("FILEENIAC_API_PORT=%s", portStr))
 			if err := c.Start(); err != nil {
 				log.L().Sugar().Errorf("Falha ao abrir aplicativo desktop: %v", err)
 			} else {
@@ -113,5 +113,5 @@ Nao abre o navegador - usa uma janela de aplicativo real.`,
 
 func init() {
 	NativeCmd.Flags().StringP("addr", "a", ":0", "Server listen address (use :0 for random port)")
-	NativeCmd.Flags().String("app", "", "Caminho para FileENIAC.exe (default: mesmo diretorio do eniac.exe)")
+	NativeCmd.Flags().String("app", "", "Caminho para FileENIAC.exe (default: mesmo diretorio do fileeniac.exe)")
 }

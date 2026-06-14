@@ -1,11 +1,11 @@
-# ENIAC Workspace
+# FileENIAC
 
 Plataforma única para gerenciamento de workspace local, repositórios Git, GitHub, deploys FTPS, histórico, auditoria e monitoramento.
 
 ## Arquitetura
 
 ```
-eniac-workspace/
+FileENIAC/
 ├── apps/desktop/       # Tauri v2 + React + TypeScript
 ├── backend/            # Go backend
 │   ├── cmd/            # CLI commands

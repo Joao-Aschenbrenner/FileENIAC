@@ -1,4 +1,4 @@
--- ENIAC Workspace - Initial Schema
+-- FileENIAC - Initial Schema
 -- Migrations: v001
 
 CREATE TABLE IF NOT EXISTS workspace_settings (

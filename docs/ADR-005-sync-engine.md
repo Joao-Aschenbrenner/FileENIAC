@@ -42,9 +42,9 @@ Git
 
 ### Comandos
 ```
-eniac-workspace sync pull --project <name>    # Atualiza mirror do servidor
-eniac-workspace sync diff --project <name>    # Mostra diferenças mirror vs local
-eniac-workspace sync apply --project <name>   # Aplica arquivos selecionados
+fileeniac sync pull --project <name>    # Atualiza mirror do servidor
+fileeniac sync diff --project <name>    # Mostra diferenças mirror vs local
+fileeniac sync apply --project <name>   # Aplica arquivos selecionados
 ```
 
 ### Regras

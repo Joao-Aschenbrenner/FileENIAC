@@ -92,7 +92,7 @@ var workspaceStatusCmd = &cobra.Command{
 var workspaceScanCmd = &cobra.Command{
 	Use:   "scan",
 	Short: "Escaneamento de workspaces",
-	Long:  "Varre diretÃ³rios em busca de workspaces ENIAC (.eniac/). A descoberta Ã© somente leitura.",
+	Long:  "Varre diretÃ³rios em busca de workspaces FileENIAC (.eniac/). A descoberta Ã© somente leitura.",
 	Run: func(cmd *cobra.Command, args []string) {
 		root, _ := cmd.Flags().GetString("path")
 		if root == "" {
@@ -111,7 +111,7 @@ var workspaceScanCmd = &cobra.Command{
 		}
 
 		if len(results) == 0 {
-			fmt.Println("Nenhum workspace ENIAC encontrado.")
+			fmt.Println("Nenhum workspace FileENIAC encontrado.")
 			return
 		}
 

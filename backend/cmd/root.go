@@ -9,20 +9,20 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "eniac",
+	Use:   "fileeniac",
 	Short: "FileENIAC - Gerenciamento de projetos e deploys",
 	Long: `FileENIAC é uma plataforma para gerenciamento de workspace local,
 deploys FTPS, histórico e monitoramento.
 
 Uso:
-  eniac native             Iniciar aplicativo desktop nativo (recomendado)
-  eniac desktop            Iniciar no navegador (fallback)
-  FileENIAC init     Inicializar workspace
-  eniac project add        Adicionar projeto
-  eniac deploy run         Executar deploy
-  eniac deploy verify      Verificar deploy
-  eniac deploy rollback    Reverter deploy
-  eniac deploy history     Histórico de deploys`,
+  fileeniac native             Iniciar aplicativo desktop nativo (recomendado)
+  fileeniac desktop            Iniciar no navegador (fallback)
+  fileeniac init               Inicializar workspace
+  fileeniac project add        Adicionar projeto
+  fileeniac deploy run         Executar deploy
+  fileeniac deploy verify      Verificar deploy
+  fileeniac deploy rollback    Reverter deploy
+  fileeniac deploy history     Histórico de deploys`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Printf("FileENIAC v%s\n", version.Version)
 		fmt.Printf("Build: %s\n", version.BuildDate)

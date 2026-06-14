@@ -1,12 +1,12 @@
 [package]
-name = "eniac-workspace"
+name = "fileeniac"
 version = "0.1.0"
-description = "ENIAC Workspace Desktop"
+description = "FileENIAC Desktop"
 authors = ["ENIAC Systems"]
 edition = "2021"
 
 [lib]
-name = "eniac_workspace_lib"
+name = "fileeniac_lib"
 crate-type = ["lib", "cdylib", "staticlib"]
 
 [build-dependencies]

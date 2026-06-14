@@ -18,9 +18,9 @@ var fromPath string
 
 var UpdateCmd = &cobra.Command{
 	Use:   "update-from [path]",
-	Short: "Atualizar eniac a partir de um novo binÃ¡rio",
-	Long: `Substitui o binÃ¡rio eniac atual por um novo binÃ¡rio.
-Uso: eniac update-from /caminho/para/novo/eniac
+	Short: "Atualizar fileeniac a partir de um novo binÃ¡rio",
+	Long: `Substitui o binÃ¡rio fileeniac atual por um novo binÃ¡rio.
+Uso: fileeniac update-from /caminho/para/novo/fileeniac
 
 O comando copia o novo binÃ¡rio sobre o atual no diretÃ³rio de instalaÃ§Ã£o.`,
 	Args: cobra.ExactArgs(1),
@@ -48,7 +48,7 @@ O comando copia o novo binÃ¡rio sobre o atual no diretÃ³rio de instalaÃ§Ã
 			return fmt.Errorf("arquivo vazio: %s", from)
 		}
 
-		log.L().Info("atualizando eniac",
+		log.L().Info("atualizando fileeniac",
 			zap.String("de", from),
 			zap.String("para", exe),
 		)
@@ -66,9 +66,9 @@ O comando copia o novo binÃ¡rio sobre o atual no diretÃ³rio de instalaÃ§Ã
 			return fmt.Errorf("erro ao copiar novo binÃ¡rio: %w", err)
 		}
 
-		log.L().Info("eniac atualizado (backup salvo em " + backup + ")")
+		log.L().Info("fileeniac atualizado (backup salvo em " + backup + ")")
 
-		fmt.Println("eniac atualizado com sucesso!")
+		fmt.Println("fileeniac atualizado com sucesso!")
 		fmt.Println("Backup salvo em:", backup)
 
 		return nil

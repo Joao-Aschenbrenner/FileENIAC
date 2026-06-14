@@ -8,11 +8,11 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - eniac-data:/data
+      - fileeniac-data:/data
     environment:
-      - ENIAC_DATA_DIR=/data
+      - FILEENIAC_DATA_DIR=/data
     restart: unless-stopped
 
 volumes:
-  eniac-data:
+  fileeniac-data:
     name: FileENIAC_Data

@@ -1,5 +1,5 @@
 #!/bin/bash
-# ENIAC Workspace - Development Script
+# FileENIAC - Development Script
 
 set -e
 

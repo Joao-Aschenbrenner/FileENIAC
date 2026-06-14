@@ -16,7 +16,7 @@ Definir contratos para Agent API. NÃO IMPLEMENTAR AGORA.
 ```yaml
 openapi: 3.0.0
 info:
-  title: ENIAC Workspace Agent API
+  title: FileENIAC Agent API
   version: 0.1.0
 
 paths:

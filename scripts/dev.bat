@@ -1,5 +1,5 @@
 @echo off
-REM ENIAC Workspace Dev Script
+REM FileENIAC Dev Script
 
 if "%1"=="" goto dev
 
@@ -16,8 +16,8 @@ goto end
 :build
 echo Building backend...
 cd /d "%~dp0.."
-go build -o bin\eniac-workspace.exe .\backend\
-echo Build complete: bin\eniac-workspace.exe
+go build -o bin\fileeniac.exe .\backend\
+echo Build complete: bin\fileeniac.exe
 goto end
 
 :test

@@ -39,12 +39,12 @@ Implementar integração com GitHub via OAuth 2.0.
 
 ### Comandos CLI
 ```
-eniac-workspace github login
-eniac-workspace github status
-eniac-workspace github discover
-eniac-workspace github import [--all]
-eniac-workspace github sync
-eniac-workspace github logout
+fileeniac github login
+fileeniac github status
+fileeniac github discover
+fileeniac github import [--all]
+fileeniac github sync
+fileeniac github logout
 ```
 
 ## Consequências

@@ -25,7 +25,7 @@ var mirrorCreateCmd = &cobra.Command{
 			project = args[0]
 		}
 		if project == "" {
-			fmt.Println("Uso: eniac mirror create --project <name>")
+			fmt.Println("Uso: fileeniac mirror create --project <name>")
 			return
 		}
 
@@ -68,7 +68,7 @@ var mirrorStatusCmd = &cobra.Command{
 			project = args[0]
 		}
 		if project == "" {
-			fmt.Println("Uso: eniac mirror status --project <name>")
+			fmt.Println("Uso: fileeniac mirror status --project <name>")
 			return
 		}
 

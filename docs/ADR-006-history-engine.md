@@ -45,10 +45,10 @@ Cada deploy gera `deploy-manifest.json`:
 
 ### Comandos
 ```
-eniac-workspace deploy push --project <name> [--fallback] [--dry-run]
-eniac-workspace deploy rollback --project <name>
-eniac-workspace deploy verify --project <name>
-eniac-workspace deploy status --project <name>
+fileeniac deploy push --project <name> [--fallback] [--dry-run]
+fileeniac deploy rollback --project <name>
+fileeniac deploy verify --project <name>
+fileeniac deploy status --project <name>
 ```
 
 ### Segurança

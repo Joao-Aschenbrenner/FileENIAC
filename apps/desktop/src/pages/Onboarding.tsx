@@ -28,7 +28,7 @@ export default function Onboarding() {
     if (ok) {
       setStep("config");
     } else {
-      setError("Backend offline. Execute 'eniac serve' no terminal antes de continuar.");
+      setError("Backend offline. Execute 'fileeniac serve' no terminal antes de continuar.");
     }
     setChecking(false);
   }
@@ -87,7 +87,7 @@ export default function Onboarding() {
             Conectar Workspace
           </h2>
           <p className="text-sm text-gray-500 mb-6">
-            Informe o caminho do workspace ENIAC que deseja gerenciar.
+            Informe o caminho do workspace FileENIAC que deseja gerenciar.
           </p>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Caminho do Workspace

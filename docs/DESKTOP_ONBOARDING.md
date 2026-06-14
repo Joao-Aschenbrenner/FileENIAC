@@ -1,7 +1,7 @@
 # Desktop Onboarding Flow
 
 ## Visão Geral
-Fluxo de onboarding do Desktop para configurar o ENIAC Workspace do zero.
+Fluxo de onboarding do Desktop para configurar o FileENIAC do zero.
 
 ## Fluxo
 
