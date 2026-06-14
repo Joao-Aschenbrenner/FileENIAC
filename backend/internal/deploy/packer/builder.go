@@ -1,4 +1,4 @@
-package packer
+﻿package packer
 
 import (
 	"archive/tar"
@@ -78,9 +78,8 @@ func (b *Builder) Pack(sourceDir, outputPath string) (*Result, error) {
 			if err != nil {
 				return err
 			}
-			defer f.Close()
-
 			n, err := io.Copy(tw, f)
+			f.Close()
 			if err != nil {
 				return err
 			}

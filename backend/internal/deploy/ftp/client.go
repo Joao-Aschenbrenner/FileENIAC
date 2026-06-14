@@ -1,4 +1,4 @@
-package ftp
+﻿package ftp
 
 import (
 	"crypto/tls"
@@ -13,20 +13,20 @@ import (
 )
 
 type Client struct {
-	conn     *ftp.ServerConn
-	host     string
-	user     string
-	pass     string
-	port     int
+	conn      *ftp.ServerConn
+	host      string
+	user      string
+	pass      string
+	port      int
 	connected bool
 }
 
 type Config struct {
-	Host     string
-	Port     int
-	User     string
-	Pass     string
-	Timeout  time.Duration
+	Host    string
+	Port    int
+	User    string
+	Pass    string
+	Timeout time.Duration
 }
 
 func NewClient(cfg Config) *Client {
@@ -46,7 +46,7 @@ func (c *Client) Connect() error {
 
 	conn, err := ftp.Dial(addr,
 		ftp.DialWithTimeout(30*time.Second),
-		ftp.DialWithExplicitTLS(&tls.Config{}),
+		ftp.DialWithExplicitTLS(&tls.Config{InsecureSkipVerify: false, ServerName: c.host}),
 	)
 	if err != nil {
 		return fmt.Errorf("failed to connect to FTP server: %w", err)
@@ -169,7 +169,7 @@ func (c *Client) Rename(oldPath, newPath string) error {
 	return nil
 }
 
-func (c *Client) List(path string) ([]string, error) {
+func (c *Client) List(path string) ([]*ftp.Entry, error) {
 	if !c.IsConnected() {
 		return nil, fmt.Errorf("not connected")
 	}
@@ -179,12 +179,7 @@ func (c *Client) List(path string) ([]string, error) {
 		return nil, fmt.Errorf("failed to list directory: %w", err)
 	}
 
-	names := make([]string, 0, len(entries))
-	for _, entry := range entries {
-		names = append(names, entry.Name)
-	}
-
-	return names, nil
+	return entries, nil
 }
 
 func (c *Client) GetCurrentDir() (string, error) {

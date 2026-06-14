@@ -1,0 +1,18 @@
+services:
+  fileeniac:
+    image: enisystems/fileeniac:latest
+    container_name: FileENIAC
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    volumes:
+      - eniac-data:/data
+    environment:
+      - ENIAC_DATA_DIR=/data
+    restart: unless-stopped
+
+volumes:
+  eniac-data:
+    name: FileENIAC_Data

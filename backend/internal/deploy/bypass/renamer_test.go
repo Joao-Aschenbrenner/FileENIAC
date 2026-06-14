@@ -1,4 +1,4 @@
-package bypass
+﻿package bypass
 
 import (
 	"strings"
