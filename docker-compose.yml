@@ -11,6 +11,14 @@ services:
       - fileeniac-data:/data
     environment:
       - FILEENIAC_DATA_DIR=/data
+      - FILEENIAC_VAULT_PASSWORD=${FILEENIAC_VAULT_PASSWORD:?required}
+      - FILEENIAC_API_TOKEN=${FILEENIAC_API_TOKEN:-}
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
     restart: unless-stopped
 
 volumes:
