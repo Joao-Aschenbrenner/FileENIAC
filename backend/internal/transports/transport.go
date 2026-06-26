@@ -6,11 +6,12 @@ import (
 )
 
 type TransportConfig struct {
-	Host    string
-	Port    int
-	User    string
-	Pass    string
-	Timeout time.Duration
+	Protocol string
+	Host     string
+	Port     int
+	User     string
+	Pass     string
+	Timeout  time.Duration
 }
 
 type FileInfo struct {
