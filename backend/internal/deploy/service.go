@@ -1,18 +1,19 @@
-﻿package deploy
+package deploy
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
 	"time"
 
 	"github.com/ENIACSystems/FileENIAC/backend/internal/database"
-	"github.com/ENIACSystems/FileENIAC/backend/internal/deploy/ftp"
 	"github.com/ENIACSystems/FileENIAC/backend/internal/deploy/hardening"
 	"github.com/ENIACSystems/FileENIAC/backend/internal/deploy/packer"
 	"github.com/ENIACSystems/FileENIAC/backend/internal/history"
 	"github.com/ENIACSystems/FileENIAC/backend/internal/log"
 	"github.com/ENIACSystems/FileENIAC/backend/internal/registry"
+	"github.com/ENIACSystems/FileENIAC/backend/internal/transports"
 	"github.com/ENIACSystems/FileENIAC/backend/internal/workspace"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -24,19 +25,10 @@ type (
 		Pack(sourceDir, outputPath string) (*packer.Result, error)
 		SetExcludes(excludes []string)
 	}
-
-	ftpClientIface interface {
-		Connect() error
-		Disconnect() error
-		Upload(localPath, remotePath string) error
-		Download(remotePath, localPath string) error
-		Delete(remotePath string) error
-		IsConnected() bool
-	}
 )
 
 var newPackerFn = func(excludes []string) artifactPacker { return packer.NewBuilder(excludes) }
-var newFTPClientFn = func(cfg ftp.Config) ftpClientIface { return ftp.NewClient(cfg) }
+var newTransportFn = func(cfg transports.TransportConfig) (transports.Transport, error) { return transports.New(cfg) }
 
 type Result struct {
 	DeployID   string `json:"deploy_id"`
@@ -113,31 +105,35 @@ func (s *Service) Deploy(ctx *workspace.Context, projectName string, useFallback
 		return nil, fmt.Errorf("checksum failed: %w", err)
 	}
 
-	ftpsCfg := ftp.Config{
-		Host:    server.Host,
-		Port:    server.Port,
-		User:    server.User,
-		Pass:    server.Password,
-		Timeout: 120 * time.Second,
+	transportCfg := transports.TransportConfig{
+		Protocol: "ftp",
+		Host:     server.Host,
+		Port:     server.Port,
+		User:     server.User,
+		Pass:     server.Password,
+		Timeout:  120 * time.Second,
 	}
 
 	// Upload with retry and circuit breaker
 	uploadErr := s.cb.Execute(func() error {
 		return hardening.DoWithRetry(func() error {
-			client := newFTPClientFn(ftpsCfg)
-			if err := client.Connect(); err != nil {
+			client, err := newTransportFn(transportCfg)
+			if err != nil {
+				return fmt.Errorf("ftps connect: %w", err)
+			}
+			if err := client.Connect(context.Background()); err != nil {
 				return fmt.Errorf("ftps connect: %w", err)
 			}
 			defer client.Disconnect()
 
 			remoteArtifactPath := server.TargetPath + "/" + filepath.Base(tmpArtifact)
-			if err := client.Upload(tmpArtifact, remoteArtifactPath); err != nil {
+			if err := client.Upload(context.Background(), tmpArtifact, remoteArtifactPath); err != nil {
 				return fmt.Errorf("upload: %w", err)
 			}
 
 			// Integrity verification: download and compare hash
 			verifyPath := tmpArtifact + ".verify"
-			if err := client.Download(remoteArtifactPath, verifyPath); err != nil {
+			if err := client.Download(context.Background(), remoteArtifactPath, verifyPath); err != nil {
 				os.Remove(verifyPath)
 				return fmt.Errorf("verify download: %w", err)
 			}
@@ -162,8 +158,11 @@ func (s *Service) Deploy(ctx *workspace.Context, projectName string, useFallback
 
 	manifestUploadErr := s.cb.Execute(func() error {
 		return hardening.DoWithRetry(func() error {
-			client := newFTPClientFn(ftpsCfg)
-			if err := client.Connect(); err != nil {
+			client, err := newTransportFn(transportCfg)
+			if err != nil {
+				return fmt.Errorf("manifest ftps connect: %w", err)
+			}
+			if err := client.Connect(context.Background()); err != nil {
 				return fmt.Errorf("manifest ftps connect: %w", err)
 			}
 			defer client.Disconnect()
@@ -180,7 +179,7 @@ func (s *Service) Deploy(ctx *workspace.Context, projectName string, useFallback
 			tmpManifest.Close()
 			defer os.Remove(tmpManifest.Name())
 
-			if err := client.Upload(tmpManifest.Name(), manifestPath); err != nil {
+			if err := client.Upload(context.Background(), tmpManifest.Name(), manifestPath); err != nil {
 				return fmt.Errorf("manifest upload: %w", err)
 			}
 			return nil
@@ -233,30 +232,36 @@ func (s *Service) Rollback(ctx *workspace.Context, projectName string) (*Result,
 
 	server, err := registry.GetServer(ctx, project.ID)
 	if err == nil {
-		ftpsCfg := ftp.Config{
-			Host:    server.Host,
-			Port:    server.Port,
-			User:    server.User,
-			Pass:    server.Password,
-			Timeout: 120 * time.Second,
+		transportCfg := transports.TransportConfig{
+			Protocol: "ftp",
+			Host:     server.Host,
+			Port:     server.Port,
+			User:     server.User,
+			Pass:     server.Password,
+			Timeout:  120 * time.Second,
 		}
-		client := newFTPClientFn(ftpsCfg)
-		if err := client.Connect(); err == nil {
-			artifactName := fmt.Sprintf("fileeniac-deploy-%s.tar.gz", lastDeploy.DeployID)
-			remoteArtifactPath := server.TargetPath + "/" + artifactName
-			manifestPath := server.TargetPath + "/deploy-manifest.json"
+		client, err := newTransportFn(transportCfg)
+		if err == nil {
+			if err := client.Connect(context.Background()); err == nil {
+				artifactName := fmt.Sprintf("fileeniac-deploy-%s.tar.gz", lastDeploy.DeployID)
+				remoteArtifactPath := server.TargetPath + "/" + artifactName
+				manifestPath := server.TargetPath + "/deploy-manifest.json"
 
-			if err := client.Delete(remoteArtifactPath); err != nil {
-				log.L().Warn("rollback: failed to delete artifact from server",
-					zap.String("path", remoteArtifactPath), zap.Error(err))
+				if err := client.Delete(context.Background(), remoteArtifactPath); err != nil {
+					log.L().Warn("rollback: failed to delete artifact from server",
+						zap.String("path", remoteArtifactPath), zap.Error(err))
+				}
+				if err := client.Delete(context.Background(), manifestPath); err != nil {
+					log.L().Warn("rollback: failed to delete manifest from server",
+						zap.String("path", manifestPath), zap.Error(err))
+				}
+				client.Disconnect()
+			} else {
+				log.L().Warn("rollback: unable to connect to FTPS server; proceeding with log-only rollback",
+					zap.Error(err))
 			}
-			if err := client.Delete(manifestPath); err != nil {
-				log.L().Warn("rollback: failed to delete manifest from server",
-					zap.String("path", manifestPath), zap.Error(err))
-			}
-			client.Disconnect()
 		} else {
-			log.L().Warn("rollback: unable to connect to FTPS server; proceeding with log-only rollback",
+			log.L().Warn("rollback: unable to create transport; proceeding with log-only rollback",
 				zap.Error(err))
 		}
 	} else {

@@ -1,14 +1,15 @@
-﻿package deploy
+package deploy
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 	"testing"
 
-	"github.com/ENIACSystems/FileENIAC/backend/internal/deploy/ftp"
 	"github.com/ENIACSystems/FileENIAC/backend/internal/deploy/packer"
 	"github.com/ENIACSystems/FileENIAC/backend/internal/history"
 	"github.com/ENIACSystems/FileENIAC/backend/internal/registry"
+	"github.com/ENIACSystems/FileENIAC/backend/internal/transports"
 	"github.com/ENIACSystems/FileENIAC/backend/internal/workspace"
 )
 
@@ -32,7 +33,7 @@ type mockFTPClient struct {
 	storedContent    []byte
 }
 
-func (m *mockFTPClient) Connect() error {
+func (m *mockFTPClient) Connect(_ context.Context) error {
 	m.connectCalled = true
 	if m.connectErr {
 		return errMock("connect failed")
@@ -45,9 +46,7 @@ func (m *mockFTPClient) Disconnect() error {
 	return nil
 }
 
-func (m *mockFTPClient) IsConnected() bool { return true }
-
-func (m *mockFTPClient) Upload(local, remote string) error {
+func (m *mockFTPClient) Upload(_ context.Context, local, remote string) error {
 	m.uploadCalled = true
 	m.uploadLocal = local
 	m.uploadRemote = remote
@@ -62,7 +61,7 @@ func (m *mockFTPClient) Upload(local, remote string) error {
 	return nil
 }
 
-func (m *mockFTPClient) Download(remote, local string) error {
+func (m *mockFTPClient) Download(_ context.Context, remote, local string) error {
 	m.downloadCalled = true
 	m.downloadRemote = remote
 	m.downloadLocal = local
@@ -72,12 +71,20 @@ func (m *mockFTPClient) Download(remote, local string) error {
 	return os.WriteFile(local, m.storedContent, 0644)
 }
 
-func (m *mockFTPClient) Delete(remote string) error {
+func (m *mockFTPClient) Delete(_ context.Context, remote string) error {
 	m.deletePaths = append(m.deletePaths, remote)
 	if m.deleteErr {
 		return errMock("delete failed")
 	}
 	return nil
+}
+
+func (m *mockFTPClient) List(_ context.Context, _ string) ([]transports.FileInfo, error) {
+	return nil, nil
+}
+
+func (m *mockFTPClient) Stat(_ context.Context, _ string) (transports.FileInfo, error) {
+	return transports.FileInfo{}, errMock("not implemented")
 }
 
 type mockPacker struct {
@@ -271,17 +278,17 @@ func TestDeploy_FTPConnectFailure(t *testing.T) {
 	ctx, s := setupTestWorkspace(t)
 
 	origPacker := newPackerFn
-	origFTP := newFTPClientFn
+	origFTP := newTransportFn
 	defer func() {
 		newPackerFn = origPacker
-		newFTPClientFn = origFTP
+		newTransportFn = origFTP
 	}()
 
 	newPackerFn = func(excludes []string) artifactPacker {
 		return &mockPacker{fileCount: 5}
 	}
-	newFTPClientFn = func(cfg ftp.Config) ftpClientIface {
-		return &mockFTPClient{connectErr: true}
+	newTransportFn = func(cfg transports.TransportConfig) (transports.Transport, error) {
+		return &mockFTPClient{connectErr: true}, nil
 	}
 
 	_, err := s.Deploy(ctx, "test-project", false)
@@ -294,18 +301,18 @@ func TestDeploy_FullSuccess(t *testing.T) {
 	ctx, s := setupTestWorkspace(t)
 
 	origPacker := newPackerFn
-	origFTP := newFTPClientFn
+	origFTP := newTransportFn
 	defer func() {
 		newPackerFn = origPacker
-		newFTPClientFn = origFTP
+		newTransportFn = origFTP
 	}()
 
 	fileCount := 7
 	newPackerFn = func(excludes []string) artifactPacker {
 		return &mockPacker{fileCount: fileCount}
 	}
-	newFTPClientFn = func(cfg ftp.Config) ftpClientIface {
-		return &mockFTPClient{}
+	newTransportFn = func(cfg transports.TransportConfig) (transports.Transport, error) {
+		return &mockFTPClient{}, nil
 	}
 
 	result, err := s.Deploy(ctx, "test-project", false)
@@ -359,10 +366,10 @@ func TestRollback_FTPServerConnectFailure(t *testing.T) {
 	ctx, s := setupTestWorkspace(t)
 
 	origPacker := newPackerFn
-	origFTP := newFTPClientFn
+	origFTP := newTransportFn
 	defer func() {
 		newPackerFn = origPacker
-		newFTPClientFn = origFTP
+		newTransportFn = origFTP
 	}()
 
 	// Need a deploy record for rollback to find
@@ -373,8 +380,8 @@ func TestRollback_FTPServerConnectFailure(t *testing.T) {
 	})
 
 	// FTP connect fails - rollback should still proceed (log-only)
-	newFTPClientFn = func(cfg ftp.Config) ftpClientIface {
-		return &mockFTPClient{connectErr: true}
+	newTransportFn = func(cfg transports.TransportConfig) (transports.Transport, error) {
+		return &mockFTPClient{connectErr: true}, nil
 	}
 
 	result, err := s.Rollback(ctx, "test-project")
@@ -390,10 +397,10 @@ func TestRollback_DeletesFromServer(t *testing.T) {
 	ctx, s := setupTestWorkspace(t)
 
 	origPacker := newPackerFn
-	origFTP := newFTPClientFn
+	origFTP := newTransportFn
 	defer func() {
 		newPackerFn = origPacker
-		newFTPClientFn = origFTP
+		newTransportFn = origFTP
 	}()
 
 	s.history.RecordDeploy(&history.DeployLog{
@@ -403,8 +410,8 @@ func TestRollback_DeletesFromServer(t *testing.T) {
 	})
 
 	mockFTP := &mockFTPClient{}
-	newFTPClientFn = func(cfg ftp.Config) ftpClientIface {
-		return mockFTP
+	newTransportFn = func(cfg transports.TransportConfig) (transports.Transport, error) {
+		return mockFTP, nil
 	}
 
 	result, err := s.Rollback(ctx, "test-project")
@@ -428,8 +435,8 @@ func TestRollback_DeletesFromServer(t *testing.T) {
 func TestRollback_DeleteFailure(t *testing.T) {
 	ctx, s := setupTestWorkspace(t)
 
-	origFTP := newFTPClientFn
-	defer func() { newFTPClientFn = origFTP }()
+	origFTP := newTransportFn
+	defer func() { newTransportFn = origFTP }()
 
 	s.history.RecordDeploy(&history.DeployLog{
 		ProjectID: 1,
@@ -438,8 +445,8 @@ func TestRollback_DeleteFailure(t *testing.T) {
 	})
 
 	mockFTP := &mockFTPClient{deleteErr: true}
-	newFTPClientFn = func(cfg ftp.Config) ftpClientIface {
-		return mockFTP
+	newTransportFn = func(cfg transports.TransportConfig) (transports.Transport, error) {
+		return mockFTP, nil
 	}
 
 	result, err := s.Rollback(ctx, "test-project")
