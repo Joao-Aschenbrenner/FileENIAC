@@ -10,6 +10,7 @@
 *.out
 vendor/
 dist/
+!backend/webui/dist/
 
 # Node / Tauri
 node_modules/
