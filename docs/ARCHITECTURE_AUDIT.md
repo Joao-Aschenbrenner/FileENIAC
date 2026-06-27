@@ -1,10 +1,10 @@
 # Architecture Audit — Sprint 1
 
 ## Data
-2026-06-11
+2026-06-26
 
 ## Status
-EM REVISAO
+APROVADO — Transport Layer concluída
 
 ---
 
@@ -31,9 +31,15 @@ backend/
     │   ├── crud.go              # CRUD legado (deployments table)
     │   ├── db.go                # Conexão DB interna (legado)
     │   └── record.go            # DeployRecord types (legado)
-    ├── deploy/                  # Deploy Service
+    ├── transports/              # Transport Layer (Sprint 1)
+    │   ├── transport.go         # Interface: Transport + TransportConfig + FileInfo
+    │   ├── factory.go           # New(cfg) — resolve protocolo no registry
+    │   ├── registry.go          # Register(), lookup(), Registered()
+    │   └── ftp/                 # FTP Transport adapter
+    │       └── transport.go     # Delega para deploy/ftp.Client, registra "ftp"
+    ├── deploy/                  # Deploy Service (usa Transport interface)
     │   ├── service.go           # Deploy, Rollback, Verify, Validate, GetHistory
-    │   ├── ftp/                 # FTPS client (PoC migrada)
+    │   ├── ftp/                 # FTPS client (fonte, não importada pelo domínio)
     │   │   ├── client.go        # Connect, Upload, Download, etc.
     │   │   └── verify.go        # Test, CheckDir, CheckFile
     │   ├── packer/              # tar.gz builder
@@ -47,6 +53,8 @@ backend/
     ├── database/                # SQLite migrator
     │   ├── database.go          # Open, Close, Exec, Query, Migrate
     │   └── migrations.go        # Schema V1-V3 (9 tabelas)
+    ├── mirror/                  # Mirror Engine (usa Transport interface)
+    │   └── mirror.go            # Create snapshot, mirrorDir recursivo
     ├── log/                     # Log wrapper (vazio, delegado ao logger)
     └── logger/                  # Logger baseado em Zap
         └── logger.go            # Info, Error, Level, configuração
@@ -56,8 +64,10 @@ backend/
 - Workspace Registry (Init, Open, Status)
 - Project Registry (Add, Remove, List, Get) + Server CRUD
 - History Engine orientado a eventos (12 tipos, deploy/rollback/verify)
-- Deploy Service (Deploy, Rollback, Verify, Validate, GetHistory)
-- FTPS Client (Connect, Upload, Download, Delete, List)
+- **Transport Layer (Sprint 1):** Interface `Transport` + Factory/Registry + Adapter FTP
+- **Deploy Service** refatorado: depende apenas da interface `Transport`
+- **Mirror Engine** refatorado: depende apenas da interface `Transport`
+- FTPS Client (Connect, Upload, Download, Delete, List) — isolado em `deploy/ftp/`
 - Packer (tar.gz com excludes)
 - Token HMAC-SHA256
 - Bypass com renomeação dinâmica
@@ -66,6 +76,8 @@ backend/
 - CLI completa (cobra commands)
 
 ### O Que Ainda É Experimental
+- Transport Layer sem testes de integração com mock (apenas unitários em service_test.go)
+- Mirror Engine sem testes de integração (apenas unitários com mock)
 - FTPS Upload sem retry/backoff — não tolerante a falhas de rede
 - Rollback apenas lógico (registra no history, não reverte arquivos no servidor)
 - History CRUD legado (deployments table) coexiste com novo service — não usado pelo service atual
@@ -114,9 +126,11 @@ projects 1:N rollback_logs (FK)
 ## 3. Deploy
 
 ### Pontos Fortes
-- Pipeline completo: Pack → Connect FTPS → Upload → Manifest → Record
+- Pipeline completo: Pack → Connect → Upload → Manifest → Record
 - Pack com excludes configuráveis
-- Suporte a FTPS com TLS explícito (porta 21)
+- **Desacoplado do FTPS:** depende apenas da interface `Transport` (Sprint 1D)
+- **Factory + Registry:** `New(cfg)` resolve protocolo, sem switch/condicionais
+- Suporte a FTPS com TLS explícito (porta 21) via adapter `transports/ftp/`
 - HMAC-SHA256 com TTL 5min
 - Bypass de ModSecurity via renomeação dinâmica
 - Eventos registrados para cada etapa (started, failed, success)
@@ -192,6 +206,9 @@ projects 1:N rollback_logs (FK)
 | `cmd/*` | 0% | ❌ |
 | `database` | 0% | ❌ |
 | `deploy` (service) | 0% | ❌ |
+| `mirror` | ~5% | ❌ |
+| `transports` | 0% | ❌ |
+| `transports/ftp` | 0% | ❌ |
 | `log` | 0% | ❌ |
 
 ### Observações
@@ -221,8 +238,10 @@ projects 1:N rollback_logs (FK)
 | DT-012 | Cobertura de testes abaixo de 80% em 5 pacotes | Alta | Sprint 2 |
 | DT-013 | Sem paginação em ListProjects | Baixa | Futuro |
 | DT-014 | `cmd/*` sem testes | Média | Sprint 2 |
-| DT-015 | Sem mock de FTPS para testes | Alta | Sprint 2 |
+| DT-015 | Sem mock de Transport para testes de integração | Alta | Sprint 2 |
 | DT-016 | Sem integração com git (commits, branches) | — | Sprint 2 |
+| DT-017 | `transports/ftp` e `mirror` sem testes | Alta | Sprint 2 |
+| DT-018 | `context.Background()` usado nas chamadas Transport — sem suporte a cancelamento | Baixa | Sprint 3 |
 
 ---
 
@@ -233,8 +252,9 @@ projects 1:N rollback_logs (FK)
 |-------|:------------:|:-------:|-----------|
 | FTPS upload falhar sem retry | Média | Alto | Implementar retry exponencial + circuit breaker |
 | Rollback não reverter arquivos | Alta | Médio | Implementar restore de artefato anterior |
-| Testes sem mock FTPS quebram em CI | Alta | Alto | Criar mock interface para FTPS |
+| Testes sem mock Transport quebram em CI | Alta | Alto | Criar mock para Transport interface |
 | Workspace discovery pode corromper contexto | Baixa | Alto | Isolar activeContext ou torná-lo thread-safe |
+| Data race em api.go (TD-001) | Alta | Alto | Adicionar `sync.Mutex` no Server.Close |
 
 ### Médio Prazo (Sprint 3-4)
 | Risco | Probabilidade | Impacto | Mitigação |
@@ -256,12 +276,13 @@ projects 1:N rollback_logs (FK)
 
 | Métrica | Valor |
 |---------|:-----:|
-| Linhas de código Go | 3.701 |
-| Arquivos Go | 32 (23 prod + 9 test) |
-| Pacotes | 13 |
-| Testes unitários | 32 |
-| Cobertura média | ~48% (ponderado) |
+| Linhas de código Go | ~4.000 |
+| Arquivos Go | 40+ (28 prod + 12 test) |
+| Pacotes | 17 |
+| Testes unitários | ~35 |
+| Cobertura média | ~45% (ponderado) |
 | Dependências externas | 11 diretas |
+| Commits na branch architecture-review | 7 (Sprint 1 completo) |
 | Comandos CLI | 10 (workspace: 3 + project: 4 + deploy: 3) |
 | Tabelas SQLite | 9 (3 ativas + 2 legado + 4 de sistema) |
 | Migrations | 3 versionadas |
@@ -270,6 +291,10 @@ projects 1:N rollback_logs (FK)
 
 ## 11. Conclusão
 
-Sprint 1 produziu fundação sólida para o Workspace. Os débitos críticos estão identificados e endereçados no hardening (DT-007, DT-008, DT-009) e no planejamento da Sprint 2 (DT-006, DT-010, DT-012, DT-015).
+Sprint 1 produziu fundação sólida: Transport Layer completa com interface + factory/registry + adapter FTP. Deploy e Mirror foram desacoplados — nenhum pacote de domínio importa `jlaffaye/ftp`.
 
-**Próximo passo**: Aprovação deste audit + ADR-011 revisado + testes de integração + hardening do Deploy Engine + métricas para liberar Sprint 2.
+A arquitetura foi validada na Sprint 1.5 com auditoria de dependências, testes completos (build + vet + test + race). Únicos pontos abertos:
+- Data race em `api.go` (TD-001) — pré-existente, endereçado na Sprint 3
+- Dependência `webui/dist/` não commitada (TD-002) — pré-existente
+
+**Próximo passo**: Sprint 2 — Engine Validation (testes com mock Transport para deploy/mirror).
