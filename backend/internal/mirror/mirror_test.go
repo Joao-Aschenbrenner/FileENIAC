@@ -1,4 +1,4 @@
-﻿package mirror
+package mirror
 
 import (
 	"os"

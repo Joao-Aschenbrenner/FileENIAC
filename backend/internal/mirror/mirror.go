@@ -1,28 +1,28 @@
-﻿package mirror
+package mirror
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
 	"time"
 
-	"github.com/ENIACSystems/FileENIAC/backend/internal/deploy/ftp"
 	"github.com/ENIACSystems/FileENIAC/backend/internal/deploy/hardening"
 	"github.com/ENIACSystems/FileENIAC/backend/internal/log"
 	"github.com/ENIACSystems/FileENIAC/backend/internal/registry"
+	"github.com/ENIACSystems/FileENIAC/backend/internal/transports"
 	"github.com/ENIACSystems/FileENIAC/backend/internal/workspace"
 	"github.com/google/uuid"
-	ftplib "github.com/jlaffaye/ftp"
 	"go.uber.org/zap"
 )
 
 type Snapshot struct {
-	ID         string `json:"id"`
-	ProjectID  int64  `json:"project_id"`
-	FilesCount int    `json:"files_count"`
-	TotalSize  int64  `json:"total_size"`
-	Status     string `json:"status"`
-	StartedAt  string `json:"started_at"`
+	ID          string `json:"id"`
+	ProjectID   int64  `json:"project_id"`
+	FilesCount  int    `json:"files_count"`
+	TotalSize   int64  `json:"total_size"`
+	Status      string `json:"status"`
+	StartedAt   string `json:"started_at"`
 	CompletedAt string `json:"completed_at"`
 }
 
@@ -80,16 +80,21 @@ func (e *Engine) Create(ctx *workspace.Context, projectName string) (*Snapshot, 
 		return nil, fmt.Errorf("failed to create mirror dir: %w", err)
 	}
 
-	cfg := ftp.Config{
-		Host:    srv.Host,
-		Port:    srv.Port,
-		User:    srv.User,
-		Pass:    srv.Password,
-		Timeout: 120 * time.Second,
+	transportCfg := transports.TransportConfig{
+		Protocol: "ftp",
+		Host:     srv.Host,
+		Port:     srv.Port,
+		User:     srv.User,
+		Pass:     srv.Password,
+		Timeout:  120 * time.Second,
 	}
 
-	client := ftp.NewClient(cfg)
-	if err := client.Connect(); err != nil {
+	client, err := transports.New(transportCfg)
+	if err != nil {
+		e.failSnapshot(ctx, proj.ID, snapshotID, err)
+		return nil, fmt.Errorf("ftps connection failed: %w", err)
+	}
+	if err := client.Connect(context.Background()); err != nil {
 		e.failSnapshot(ctx, proj.ID, snapshotID, err)
 		return nil, fmt.Errorf("ftps connection failed: %w", err)
 	}
@@ -126,8 +131,8 @@ func (e *Engine) Create(ctx *workspace.Context, projectName string) (*Snapshot, 
 }
 
 // mirrorDir recursively mirrors a remote directory to a local path.
-func (e *Engine) mirrorDir(client *ftp.Client, remotePath, localPath string) (int, int64, error) {
-	entries, err := client.List(remotePath)
+func (e *Engine) mirrorDir(client transports.Transport, remotePath, localPath string) (int, int64, error) {
+	entries, err := client.List(context.Background(), remotePath)
 	if err != nil {
 		return 0, 0, fmt.Errorf("failed to list remote dir %s: %w", remotePath, err)
 	}
@@ -147,7 +152,7 @@ func (e *Engine) mirrorDir(client *ftp.Client, remotePath, localPath string) (in
 		remoteChild := remotePath + "/" + entry.Name
 		localChild := filepath.Join(localPath, entry.Name)
 
-		if entry.Type == ftplib.EntryTypeFolder {
+		if entry.IsDir {
 			subFiles, subSize, err := e.mirrorDir(client, remoteChild, localChild)
 			if err != nil {
 				log.L().Warn("mirror subdir failed, skipping",
@@ -160,7 +165,7 @@ func (e *Engine) mirrorDir(client *ftp.Client, remotePath, localPath string) (in
 			totalSize += subSize
 		} else {
 			dlErr := hardening.DoWithRetry(func() error {
-				return client.Download(remoteChild, localChild)
+				return client.Download(context.Background(), remoteChild, localChild)
 			}, hardening.DefaultRetryConfig())
 
 			if dlErr != nil {
