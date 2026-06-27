@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Bug Correction
+
+- [x] **needsDelete corrigido:** `mirror_to_local` + `StateNew` tratava arquivos novos
+      no mirror como deleção (deveria ser cópia). `mirror_to_local` + `StateRemoved`
+      invertido para refletir deleção correta. Testes atualizados.
+
 ### Reliability
 
 - [x] **TD-001 — Data Race eliminada:** `api.go` — acesso concorrente a `s.srv`
@@ -18,12 +24,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [x] **TD-002 — Build reprodutível:** `backend/webui/dist/` removido do `.gitignore`
       e adicionado ao versionamento. O `//go:embed dist` funciona em checkout limpo.
 
+### Dead Code Removal
+
+- [x] **history/crud.go, db.go, record.go, crud_test.go removidos:**
+      Comprovadamente mortos — zero referências externas a CRUD, DB, DeployRecord.
+      A Service atual usa database.DB para deploy_logs, rollback_logs e events.
+
 ### Test Coverage
 
 - [x] **Sprint 2 — Engine Validation (3ef45e8):** 40+ novos testes para Mirror,
       Sync, Diff e History. Mock Transport para Mirror (sem FTP real). Tabela de
       8 combinações para `needsDelete`. Bug documentado: `mirror_to_local` + `StateNew`
       inverte cópia com deleção.
+- [x] **Sprint 4 — Transport Layer Coverage:** 14 novos testes para Registry,
+      Factory e FTP Adapter — registro, lookup duplicado, protocolo inválido,
+      configuração, erros de conexão, operações sem conexão.
+- [x] **Sprint 4 — CLI Coverage:** 22 novos testes — help, flags inválidas,
+      subcomandos inválidos, estrutura de comandos, flags obrigatórias.
 
 ### Architecture
 
@@ -188,8 +205,6 @@ All CRITICAL and HIGH findings have been remediated in this hardening campaign.
   affect produced binaries.
 - Pre-existing React Router `Future Flag` warnings in the Vitest console
   remain — independent of this release and tracked in the frontend backlog.
-- **`needsDelete` bug (Sync):** `mirror_to_local` + `StateNew` retorna `true`
-  (deve ser `false`). Documentado em `sync_test.go:176` mas não corrigido.
-  Agendado para Sprint 4 (Performance) ou sprint posterior de correção.
+
 
 [Unreleased]: https://example.com/fileeniac/compare/v0.0.0...HEAD

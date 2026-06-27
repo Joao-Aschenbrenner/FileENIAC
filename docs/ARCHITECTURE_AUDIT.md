@@ -1,10 +1,10 @@
-# Architecture Audit — Sprints 1-3
+# Architecture Audit — Sprints 1-4
 
 ## Data
 2026-06-27
 
 ## Status
-APROVADO — Transport Layer concluída, Engine validada, Technical Debts TD-001 e TD-002 resolvidas
+APROVADO — Transport Layer concluída, Engine validada, TD-001/TD-002 resolvidas, needsDelete corrigido, dead code removido, cobertura expandida
 
 ---
 
@@ -305,17 +305,18 @@ projects 1:N rollback_logs (FK)
 
 ## 11. Conclusão
 
-### Sprints 1-3 Resumo
+### Sprints 1-4 Resumo
 
 - **Sprint 1**: Transport Layer completa — interface + factory/registry + adapter FTP. Deploy e Mirror desacoplados.
 - **Sprint 1.5**: Auditoria de dependências, validação de arquitetura, builds verdes.
 - **Sprint 2**: Engine Validation — 40+ novos testes para Mirror, Sync, Diff e History com mock Transport. Cobertura de testes subiu de ~35 para 60+ testes.
 - **Sprint 3**: Core Reliability — TD-001 (data race) e TD-002 (build reprodutível) resolvidos. `go test -race ./...` verde.
+- **Sprint 4**: Robustez, Limpeza e Cobertura — needsDelete corrigido, dead code history removido, Transport Layer (14 testes) e CLI (22 testes) cobertos. Total: ~100+ testes.
 
-### Pendências para Sprint 4+
+### Pendências para Sprint 5+
 
-- `needsDelete` bug (StateNew + mirror_to_local) — baixo impacto, corrigir na Sprint 4
 - 8 débitos técnicos de média prioridade ainda abertos (DT-001 a DT-010)
-- Testes de CLI e Transport/FTP ainda sem cobertura
+- Testes de cobertura para deploy/ftp e deploy/packer
+- Observabilidade: logging estruturado, correlation IDs, métricas
 
-**Próximo passo**: Sprint 4 — Performance e correção do bug needsDelete.
+**Próximo passo**: Sprint 5 — Observabilidade (logging, correlation IDs, métricas, diagnósticos).
