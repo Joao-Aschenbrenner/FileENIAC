@@ -1,0 +1,7 @@
+#!/usr/bin/env sh
+# commit-msg hook placeholder.
+# FileENIAC does not enforce commit message conventions today; this file exists
+# so Husky recognises the hook and future policy (e.g. conventional commits)
+# can be added in one place without re-installing hooks.
+
+exit 0

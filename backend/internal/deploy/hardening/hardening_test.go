@@ -1,4 +1,4 @@
-﻿package hardening
+package hardening
 
 import (
 	"errors"

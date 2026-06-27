@@ -1,4 +1,4 @@
-﻿package packer
+package packer
 
 import (
 	"os"

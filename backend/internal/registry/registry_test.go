@@ -1,4 +1,4 @@
-﻿package registry
+package registry
 
 import (
 	"os"
@@ -37,12 +37,12 @@ func TestAddProject(t *testing.T) {
 	ctx, _ := setupTestWorkspace(t)
 
 	p := &Project{
-		Name:       "test-project",
-		LocalPath:  os.TempDir(),
-		RemotePath: "/remote/test",
-		Branch:     "main",
+		Name:        "test-project",
+		LocalPath:   os.TempDir(),
+		RemotePath:  "/remote/test",
+		Branch:      "main",
 		Environment: "production",
-		IsActive:   true,
+		IsActive:    true,
 	}
 
 	id, err := AddProject(ctx, p)

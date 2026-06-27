@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Reliability
+
+- [x] **TD-001 — Data Race eliminada:** `api.go` — acesso concorrente a `s.srv`
+      entre `ListenAndServe`/`ListenDynamic` (escrita) e `Close`/`Addr` (leitura).
+      Corrigido com `sync.RWMutex`. Nenhuma race detectada em `go test -race ./...`.
+
+### Build
+
+- [x] **TD-002 — Build reprodutível:** `backend/webui/dist/` removido do `.gitignore`
+      e adicionado ao versionamento. O `//go:embed dist` funciona em checkout limpo.
+
+### Test Coverage
+
+- [x] **Sprint 2 — Engine Validation (3ef45e8):** 40+ novos testes para Mirror,
+      Sync, Diff e History. Mock Transport para Mirror (sem FTP real). Tabela de
+      8 combinações para `needsDelete`. Bug documentado: `mirror_to_local` + `StateNew`
+      inverte cópia com deleção.
+
 ### Architecture
 
 - [x] **Transport Layer (ADR-014):** Interface `Transport` + `TransportConfig` + `FileInfo` na
@@ -19,8 +37,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
       `transports.Transport` — sem import de `deploy/ftp` (Sprint 1D).
 - [x] **Mirror desacoplado:** `internal/mirror/mirror.go` substitui `ftplib "github.com/jlaffaye/ftp"`
       por `transports.Transport` — sem import externo de FTP (Sprint 1E).
-- [x] **Arquitetura validada:** `go build ./...` + `go vet ./...` + `go test ./...` + `go test -race ./...`
-      verdes (exceto data race pré-existente TD-001 em api.go).
+- [x] **Arquitetura validada (Sprint 1.5):** `go build ./...` + `go vet ./...` + `go test ./...` + `go test -race ./...`
+      verdes. Transport Layer auditada: `jlaffye/ftp` isolado em `deploy/ftp/` e `transports/ftp/`.
 
 ### Security
 
@@ -170,5 +188,8 @@ All CRITICAL and HIGH findings have been remediated in this hardening campaign.
   affect produced binaries.
 - Pre-existing React Router `Future Flag` warnings in the Vitest console
   remain — independent of this release and tracked in the frontend backlog.
+- **`needsDelete` bug (Sync):** `mirror_to_local` + `StateNew` retorna `true`
+  (deve ser `false`). Documentado em `sync_test.go:176` mas não corrigido.
+  Agendado para Sprint 4 (Performance) ou sprint posterior de correção.
 
 [Unreleased]: https://example.com/fileeniac/compare/v0.0.0...HEAD

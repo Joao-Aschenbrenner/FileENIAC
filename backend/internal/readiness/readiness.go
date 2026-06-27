@@ -1,4 +1,4 @@
-﻿package readiness
+package readiness
 
 import (
 	"github.com/ENIACSystems/FileENIAC/backend/internal/clone"

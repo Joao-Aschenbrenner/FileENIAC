@@ -1,4 +1,4 @@
-﻿package update
+package update
 
 import (
 	"fmt"
@@ -72,8 +72,8 @@ func CheckAndApply() bool {
 	log.L().Info("fileeniac.exe renomeado para fileeniac.exe.old")
 
 	updateFiles := map[string]string{
-		"FileENIAC.exe":  updateTauri,
-		"WebView2Loader.dll":   updateDll,
+		"FileENIAC.exe":      updateTauri,
+		"WebView2Loader.dll": updateDll,
 	}
 
 	for name, src := range updateFiles {

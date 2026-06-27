@@ -1,4 +1,4 @@
-﻿package token
+package token
 
 import (
 	"net/http"
@@ -9,7 +9,7 @@ import (
 
 func TestSigner_Sign(t *testing.T) {
 	signer := NewSigner("test-secret")
-	
+
 	sig, ts, err := signer.Sign("test-project")
 	if err != nil {
 		t.Fatalf("Sign failed: %v", err)
@@ -49,7 +49,7 @@ func TestSigner_Validate(t *testing.T) {
 
 func TestSigner_GenerateHeaders(t *testing.T) {
 	signer := NewSigner("test-secret")
-	
+
 	headers, err := signer.GenerateHeaders("test-project")
 	if err != nil {
 		t.Fatalf("GenerateHeaders failed: %v", err)

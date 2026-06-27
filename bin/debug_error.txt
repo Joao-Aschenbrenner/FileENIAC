@@ -1,0 +1,6 @@
+{"level":"info","ts":1781474344.5793009,"caller":"cmd/native.go:42","msg":"caminho resolvido","exe":"C:\\Users\\USUARIO\\Documents\\GitWrkspc\\FileENIAC\\bin\\fileeniac-cli.exe","dir":"C:\\Users\\USUARIO\\Documents\\GitWrkspc\\FileENIAC\\bin","tauriPath":"C:\\Users\\USUARIO\\Documents\\GitWrkspc\\FileENIAC\\bin\\FileENIAC.exe"}
+{"level":"info","ts":1781474344.5793009,"caller":"cmd/native.go:50","msg":"verificando aplicativo desktop","path":"C:\\Users\\USUARIO\\Documents\\GitWrkspc\\FileENIAC\\bin\\FileENIAC.exe"}
+{"level":"info","ts":1781474344.581312,"caller":"api/api.go:105","msg":"api server listening (dynamic)","addr":"[::]:57547"}
+{"level":"info","ts":1781474344.5818293,"caller":"cmd/native.go:108","msg":"FileENIAC rodando na porta 0 (janela nativa)"}
+{"level":"info","ts":1781474345.3823912,"caller":"cmd/native.go:92","msg":"abrindo aplicativo desktop nativo","path":"C:\\Users\\USUARIO\\Documents\\GitWrkspc\\FileENIAC\\bin\\FileENIAC.exe"}
+{"level":"info","ts":1781474345.3871558,"caller":"cmd/native.go:98","msg":"aplicativo desktop iniciado","pid":37128}

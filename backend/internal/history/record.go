@@ -1,15 +1,15 @@
-﻿package history
+package history
 
 import "time"
 
 type DeployRecord struct {
-	ID              int64
-	ProjectID       string
-	Timestamp       time.Time
-	Status          string
-	ArtifactHash    string
-	MigrationResult string
-	CommitHash      string
+	ID               int64
+	ProjectID        string
+	Timestamp        time.Time
+	Status           string
+	ArtifactHash     string
+	MigrationResult  string
+	CommitHash       string
 	RolledBackFromID *int64
 }
 

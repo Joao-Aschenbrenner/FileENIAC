@@ -1,4 +1,4 @@
-﻿package discovery
+package discovery
 
 import (
 	"fmt"
@@ -12,12 +12,12 @@ import (
 )
 
 type ScanResult struct {
-	Path     string              `json:"path"`
-	Found    bool                `json:"found"`
-	Workspace string             `json:"workspace,omitempty"`
-	Error    string              `json:"error,omitempty"`
-	Projects []*registry.Project `json:"projects,omitempty"`
-	Servers  []*registry.Server  `json:"servers,omitempty"`
+	Path      string              `json:"path"`
+	Found     bool                `json:"found"`
+	Workspace string              `json:"workspace,omitempty"`
+	Error     string              `json:"error,omitempty"`
+	Projects  []*registry.Project `json:"projects,omitempty"`
+	Servers   []*registry.Server  `json:"servers,omitempty"`
 }
 
 type Scanner struct{}

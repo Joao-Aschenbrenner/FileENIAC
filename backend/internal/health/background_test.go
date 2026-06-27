@@ -1,4 +1,4 @@
-﻿package health_test
+package health_test
 
 import (
 	"path/filepath"
@@ -164,5 +164,3 @@ func TestBackgroundRunner_RunCheckOnStart(t *testing.T) {
 		t.Error("expected snapshot to be populated immediately after start")
 	}
 }
-
-

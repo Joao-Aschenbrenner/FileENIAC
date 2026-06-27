@@ -1,4 +1,4 @@
-﻿package diff
+package diff
 
 import (
 	"crypto/sha256"
@@ -19,26 +19,26 @@ import (
 type FileState string
 
 const (
-	StateNew         FileState = "novo"
-	StateModified    FileState = "modificado"
-	StateRemoved     FileState = "removido"
-	StateDivergent   FileState = "divergente"
-	StateSynced      FileState = "sincronizado"
-	StateUnknown     FileState = "desconhecido"
+	StateNew       FileState = "novo"
+	StateModified  FileState = "modificado"
+	StateRemoved   FileState = "removido"
+	StateDivergent FileState = "divergente"
+	StateSynced    FileState = "sincronizado"
+	StateUnknown   FileState = "desconhecido"
 )
 
 type FileDiff struct {
-	Path        string    `json:"path"`
-	LocalHash   string    `json:"local_hash,omitempty"`
-	RemoteHash  string    `json:"remote_hash,omitempty"`
-	Status      FileState `json:"status"`
-	Source      string    `json:"source"`
+	Path       string    `json:"path"`
+	LocalHash  string    `json:"local_hash,omitempty"`
+	RemoteHash string    `json:"remote_hash,omitempty"`
+	Status     FileState `json:"status"`
+	Source     string    `json:"source"`
 }
 
 type Report struct {
-	ProjectName string     `json:"project_name"`
-	SourceA     string     `json:"source_a"`
-	SourceB     string     `json:"source_b"`
+	ProjectName string      `json:"project_name"`
+	SourceA     string      `json:"source_a"`
+	SourceB     string      `json:"source_b"`
 	Files       []*FileDiff `json:"files"`
 	Summary     struct {
 		Total    int `json:"total"`

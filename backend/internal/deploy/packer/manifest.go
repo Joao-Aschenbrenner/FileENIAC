@@ -1,4 +1,4 @@
-﻿package packer
+package packer
 
 import (
 	"crypto/sha256"
@@ -10,9 +10,9 @@ import (
 )
 
 type Manifest struct {
-	ProjectName string            `json:"project_name"`
-	Files       []ManifestFile    `json:"files"`
-	HashTree    string            `json:"hash_tree"`
+	ProjectName string         `json:"project_name"`
+	Files       []ManifestFile `json:"files"`
+	HashTree    string         `json:"hash_tree"`
 }
 
 type ManifestFile struct {

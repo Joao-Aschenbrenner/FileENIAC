@@ -1,4 +1,4 @@
-﻿package token
+package token
 
 import (
 	"crypto/hmac"
@@ -23,11 +23,11 @@ func NewSigner(secret string) *Signer {
 func (s *Signer) Sign(projectName string) (string, time.Time, error) {
 	timestamp := time.Now()
 	message := fmt.Sprintf("%d/%s", timestamp.Unix(), projectName)
-	
+
 	h := hmac.New(sha256.New, s.secret)
 	h.Write([]byte(message))
 	signature := hex.EncodeToString(h.Sum(nil))
-	
+
 	return signature, timestamp, nil
 }
 
@@ -51,8 +51,8 @@ func (s *Signer) GenerateHeaders(projectName string) (map[string]string, error) 
 	}
 
 	return map[string]string{
-		"X-Deploy-Token":      sig,
-		"X-Deploy-Timestamp":  fmt.Sprintf("%d", ts.Unix()),
-		"X-Deploy-Project":     projectName,
+		"X-Deploy-Token":     sig,
+		"X-Deploy-Timestamp": fmt.Sprintf("%d", ts.Unix()),
+		"X-Deploy-Project":   projectName,
 	}, nil
 }

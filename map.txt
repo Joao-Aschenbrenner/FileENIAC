@@ -1,0 +1,50 @@
+FileENIAC/
+├── bin/                                    ← EXECUTÁVEIS (é aqui!)
+│   ├── fileeniac-cli.exe                   ← Backend Go (12.8 MB)
+│   ├── FileENIAC.exe                       ← Desktop Tauri (18.9 MB)
+│   └── WebView2Loader.dll                  ← Runtime WebView2
+│
+├── build/
+│   ├── bin/                                ← Builds antigos
+│   │   ├── eniac.exe                       ← Backend antigo
+│   │   └── FileENIAC.exe                   ← Desktop antigo
+│   ├── installer/
+│   │   ├── installer.iss                   ← Script Inno Setup
+│   │   ├── FileENIAC_Setup.exe             ← Instalador (se buildar)
+│   │   └── icon.ico
+│   ├── runtime/
+│   │   └── WebView2Loader.dll
+│   └── checksums/
+│       └── SHA256SUMS
+│
+├── backend/                                ← CÓDIGO FONTE GO
+│   ├── cmd/                                ← CLI commands (root, native, deploy...)
+│   ├── internal/                           ← Engines (api, deploy, sync, vault...)
+│   ├── database/                           ← SQLite schema
+│   ├── integration/                        ← Testes de integração
+│   └── webui/
+│
+├── apps/desktop/                           ← CÓDIGO FONTE DESKTOP
+│   ├── src-tauri/                          ← Rust (Tauri)
+│   │   ├── src/lib.rs                      ← Bridge Go↔Tauri
+│   │   ├── tauri.conf.json                 ← Config Tauri
+│   │   └── icons/                          ← Ícones (SVG/PNG/ICO)
+│   ├── src/                                ← React/TypeScript
+│   │   ├── api/client.ts                   ← Cliente API
+│   │   ├── components/                     ← Sidebar, Layout...
+│   │   └── pages/                          ← Onboarding, Dashboard...
+│   └── package.json
+│
+├── release/                                ← DOCUMENTOS DE RELEASE
+│   ├── RELEASE_NOTES.md
+│   ├── RC1_FINAL_VALIDATION.md
+│   ├── guides/                             ← Guias de teste
+│   └── scripts/clean_install.ps1
+│
+├── docs/                                   ← ADRs (decisões de arquitetura)
+├── scripts/                                ← Scripts dev (dev.bat, test_backend.bat)
+├── Dockerfile
+├── docker-compose.yml
+├── Makefile
+├── go.mod                                  ← Module: github.com/ENIACSystems/FileENIAC
+└── README.md

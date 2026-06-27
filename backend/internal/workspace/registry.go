@@ -1,4 +1,4 @@
-﻿package workspace
+package workspace
 
 import (
 	"fmt"
@@ -6,10 +6,10 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/BurntSushi/toml"
 	"github.com/ENIACSystems/FileENIAC/backend/internal/database"
 	"github.com/ENIACSystems/FileENIAC/backend/internal/log"
 	"github.com/ENIACSystems/FileENIAC/backend/internal/vault"
-	"github.com/BurntSushi/toml"
 	"go.uber.org/zap"
 )
 
@@ -160,15 +160,15 @@ func (ws *Workspace) Status() map[string]interface{} {
 	eventCount, _ := activeContext.DB.Count("events", "1=1")
 
 	return map[string]interface{}{
-		"name":         ws.Name,
-		"description":  ws.Description,
-		"path":         ws.Path,
-		"projects":     projectCount,
-		"servers":      serverCount,
-		"deploys":      deployCount,
-		"events":       eventCount,
-		"created_at":   ws.CreatedAt.Format(time.RFC3339),
-		"updated_at":   ws.UpdatedAt.Format(time.RFC3339),
+		"name":        ws.Name,
+		"description": ws.Description,
+		"path":        ws.Path,
+		"projects":    projectCount,
+		"servers":     serverCount,
+		"deploys":     deployCount,
+		"events":      eventCount,
+		"created_at":  ws.CreatedAt.Format(time.RFC3339),
+		"updated_at":  ws.UpdatedAt.Format(time.RFC3339),
 	}
 }
 

@@ -1,4 +1,4 @@
-﻿package validate_test
+package validate_test
 
 import (
 	"os/exec"

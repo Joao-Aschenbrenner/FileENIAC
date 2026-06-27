@@ -1,4 +1,4 @@
-﻿package clone_test
+package clone_test
 
 import (
 	"os"

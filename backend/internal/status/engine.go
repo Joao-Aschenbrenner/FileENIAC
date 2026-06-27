@@ -1,16 +1,16 @@
-﻿package status
+package status
 
 type ImportState string
 
 const (
-	StateNotImported       ImportState = "not_imported"
-	StateImporting         ImportState = "importing"
-	StateImported          ImportState = "imported"
-	StateClonePending      ImportState = "clone_pending"
-	StateCloneFailed       ImportState = "clone_failed"
+	StateNotImported        ImportState = "not_imported"
+	StateImporting          ImportState = "importing"
+	StateImported           ImportState = "imported"
+	StateClonePending       ImportState = "clone_pending"
+	StateCloneFailed        ImportState = "clone_failed"
 	StateRevalidationFailed ImportState = "revalidation_failed"
-	StateNeedsRefresh      ImportState = "needs_refresh"
-	StateCloned            ImportState = "cloned"
+	StateNeedsRefresh       ImportState = "needs_refresh"
+	StateCloned             ImportState = "cloned"
 )
 
 type Engine struct{}

@@ -1,4 +1,4 @@
-﻿package refresh_test
+package refresh_test
 
 import (
 	"path/filepath"

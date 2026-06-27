@@ -1,4 +1,4 @@
-﻿package packer
+package packer
 
 import (
 	"archive/tar"
@@ -16,8 +16,8 @@ type Builder struct {
 
 type Result struct {
 	ArchivePath string
-	FileCount  int
-	SizeBytes  int64
+	FileCount   int
+	SizeBytes   int64
 }
 
 func NewBuilder(excludes []string) *Builder {
@@ -96,8 +96,8 @@ func (b *Builder) Pack(sourceDir, outputPath string) (*Result, error) {
 
 	return &Result{
 		ArchivePath: outputPath,
-		FileCount:  fileCount,
-		SizeBytes:  totalSize,
+		FileCount:   fileCount,
+		SizeBytes:   totalSize,
 	}, nil
 }
 

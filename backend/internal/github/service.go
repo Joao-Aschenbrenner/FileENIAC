@@ -1,4 +1,4 @@
-﻿package github
+package github
 
 import (
 	"encoding/json"
@@ -14,25 +14,25 @@ type Service struct {
 }
 
 type Organization struct {
-	Login string `json:"login"`
-	ID    int64  `json:"id"`
-	URL   string `json:"url"`
+	Login  string `json:"login"`
+	ID     int64  `json:"id"`
+	URL    string `json:"url"`
 	Avatar string `json:"avatar_url"`
 }
 
 type Repository struct {
-	ID              int64  `json:"id"`
-	Name            string `json:"name"`
-	FullName        string `json:"full_name"`
-	Description     string `json:"description"`
-	HTMLURL         string `json:"html_url"`
-	CloneURL        string `json:"clone_url"`
-	DefaultBranch   string `json:"default_branch"`
-	Language        string `json:"language"`
-	Private         bool   `json:"private"`
-	Fork            bool   `json:"fork"`
-	Organization    string `json:"organization,omitempty"`
-	UpdatedAt       string `json:"updated_at,omitempty"`
+	ID            int64  `json:"id"`
+	Name          string `json:"name"`
+	FullName      string `json:"full_name"`
+	Description   string `json:"description"`
+	HTMLURL       string `json:"html_url"`
+	CloneURL      string `json:"clone_url"`
+	DefaultBranch string `json:"default_branch"`
+	Language      string `json:"language"`
+	Private       bool   `json:"private"`
+	Fork          bool   `json:"fork"`
+	Organization  string `json:"organization,omitempty"`
+	UpdatedAt     string `json:"updated_at,omitempty"`
 }
 
 type Branch struct {

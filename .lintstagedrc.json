@@ -1,0 +1,4 @@
+{
+  "*.go": "gofmt -w",
+  "*.{ts,tsx,js,jsx,json,md,css}": "echo 'no formatter configured (prettier/eslint not installed); skipping' && true"
+}

@@ -1,4 +1,4 @@
-﻿package history
+package history
 
 import (
 	"database/sql"
@@ -11,24 +11,24 @@ import (
 )
 
 const (
-	EventDeployStarted    = "DEPLOY_STARTED"
-	EventDeploySuccess    = "DEPLOY_SUCCESS"
-	EventDeployFailed     = "DEPLOY_FAILED"
-	EventRollbackStarted  = "ROLLBACK_STARTED"
-	EventRollbackSuccess  = "ROLLBACK_SUCCESS"
-	EventRollbackFailed   = "ROLLBACK_FAILED"
-	EventVerifySuccess    = "VERIFY_SUCCESS"
-	EventVerifyFailed     = "VERIFY_FAILED"
-	EventSyncStarted      = "SYNC_STARTED"
-	EventSyncCompleted    = "SYNC_COMPLETED"
-	EventSyncFailed       = "SYNC_FAILED"
-	EventProjectCreated   = "PROJECT_CREATED"
-	EventProjectRemoved   = "PROJECT_REMOVED"
-	EventServerAdded      = "SERVER_ADDED"
-	EventServerUpdated    = "SERVER_UPDATED"
-	EventServerRemoved    = "SERVER_REMOVED"
-	EventAlert            = "ALERT"
-	EventError            = "ERROR"
+	EventDeployStarted   = "DEPLOY_STARTED"
+	EventDeploySuccess   = "DEPLOY_SUCCESS"
+	EventDeployFailed    = "DEPLOY_FAILED"
+	EventRollbackStarted = "ROLLBACK_STARTED"
+	EventRollbackSuccess = "ROLLBACK_SUCCESS"
+	EventRollbackFailed  = "ROLLBACK_FAILED"
+	EventVerifySuccess   = "VERIFY_SUCCESS"
+	EventVerifyFailed    = "VERIFY_FAILED"
+	EventSyncStarted     = "SYNC_STARTED"
+	EventSyncCompleted   = "SYNC_COMPLETED"
+	EventSyncFailed      = "SYNC_FAILED"
+	EventProjectCreated  = "PROJECT_CREATED"
+	EventProjectRemoved  = "PROJECT_REMOVED"
+	EventServerAdded     = "SERVER_ADDED"
+	EventServerUpdated   = "SERVER_UPDATED"
+	EventServerRemoved   = "SERVER_REMOVED"
+	EventAlert           = "ALERT"
+	EventError           = "ERROR"
 )
 
 type Event struct {

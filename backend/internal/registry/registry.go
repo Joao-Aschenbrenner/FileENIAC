@@ -1,4 +1,4 @@
-﻿package registry
+package registry
 
 import (
 	"fmt"
@@ -30,17 +30,17 @@ type Project struct {
 }
 
 type Server struct {
-	ID          int64  `json:"id"`
-	ProjectID   int64  `json:"project_id"`
-	Name        string `json:"name"`
-	Type        string `json:"type"`
-	Host        string `json:"host"`
-	Port        int    `json:"port"`
-	User        string `json:"user"`
-	Password    string `json:"-"`
-	TargetPath  string `json:"target_path"`
-	VerifyURL   string `json:"verify_url,omitempty"`
-	IsActive    bool   `json:"is_active"`
+	ID         int64  `json:"id"`
+	ProjectID  int64  `json:"project_id"`
+	Name       string `json:"name"`
+	Type       string `json:"type"`
+	Host       string `json:"host"`
+	Port       int    `json:"port"`
+	User       string `json:"user"`
+	Password   string `json:"-"`
+	TargetPath string `json:"target_path"`
+	VerifyURL  string `json:"verify_url,omitempty"`
+	IsActive   bool   `json:"is_active"`
 }
 
 func AddProject(ctx *workspace.Context, p *Project) (int64, error) {
@@ -410,7 +410,11 @@ func ImportedRepositories(ctx *workspace.Context) ([]*Repository, error) {
 	return scanRepositories(rows)
 }
 
-func scanRepositories(rows interface{ Next() bool; Scan(dest ...interface{}) error; Err() error }) ([]*Repository, error) {
+func scanRepositories(rows interface {
+	Next() bool
+	Scan(dest ...interface{}) error
+	Err() error
+}) ([]*Repository, error) {
 	var repos []*Repository
 	for rows.Next() {
 		r := &Repository{}

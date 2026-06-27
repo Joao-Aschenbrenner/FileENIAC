@@ -1,4 +1,4 @@
-﻿package history
+package history
 
 import (
 	"database/sql"
@@ -18,7 +18,7 @@ func (c *CRUD) Insert(rec *DeployRecord) (int64, error) {
 		INSERT INTO deployments (project_id, status, artifact_hash, migration_result, commit_hash, rolled_back_from_id)
 		VALUES (?, ?, ?, ?, ?, ?)
 	`
-	
+
 	var rolledBackID interface{}
 	if rec.RolledBackFromID != nil {
 		rolledBackID = *rec.RolledBackFromID

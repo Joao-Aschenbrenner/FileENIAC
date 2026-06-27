@@ -1,4 +1,4 @@
-﻿package readiness_test
+package readiness_test
 
 import (
 	"path/filepath"

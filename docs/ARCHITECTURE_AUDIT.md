@@ -1,10 +1,10 @@
-# Architecture Audit — Sprint 1
+# Architecture Audit — Sprints 1-3
 
 ## Data
-2026-06-26
+2026-06-27
 
 ## Status
-APROVADO — Transport Layer concluída
+APROVADO — Transport Layer concluída, Engine validada, Technical Debts TD-001 e TD-002 resolvidas
 
 ---
 
@@ -211,12 +211,15 @@ projects 1:N rollback_logs (FK)
 | `transports/ftp` | 0% | ❌ |
 | `log` | 0% | ❌ |
 
-### Observações
-- 9 test files, 32 testes unitários
-- Testes de integração: **zero**
-- Testes de CLI: **zero**
-- Mock de FTPS: **não existe** — testes de ftp/client.go mal cobrem cenários reais
-- Testes do Deploy Service: **não existem** — requer mock do FTPS + history
+### Observações (Sprint 3)
+- 15+ test files, 60+ testes unitários
+- Testes de integração: 7 testes funcionais
+- Mock de Transport: implementado em `mirror_test.go` (mockTransport — Connect, Disconnect, List, Download, Stat, Upload, Delete, Mkdir, Rename)
+- Testes do Deploy Service: ~15 testes (Validate, Deploy, Rollback, Verify — com mock Transport)
+- Testes Sync/Apply: 6 cenários de Apply + 8 combinações table-driven para needsDelete
+- Testes Diff: Synced/Modified/New/Removed/Subdirs/EmptyTree + Status Synced/Divergent
+- Testes Mirror: 5 testes (Create success, Connect/List/Download failure, Status)
+- Testes History: 16 testes (CRUD + negativos + GetEventList + ClosedDB)
 
 ---
 
@@ -224,39 +227,50 @@ projects 1:N rollback_logs (FK)
 
 | ID | Débito | Prioridade | Sprint |
 |----|--------|:----------:|:------:|
-| DT-001 | `log/` package vazio — apenas delega para logger/ | Baixa | Sprint 2 |
-| DT-002 | `history/crud.go` e `history/record.go` — dead code legado | Média | Sprint 2 |
-| DT-003 | `history/db.go` — conexão DB separada, não usa database.DB | Média | Sprint 2 |
-| DT-004 | Tabelas `deployments` e `audit_log` — dead schema | Média | Sprint 2 |
-| DT-005 | Sem cleanup de artefatos temporários | Média | Sprint 1 |
-| DT-006 | Rollback apenas lógico | Alta | Sprint 2 |
-| DT-007 | Sem retry/backoff no FTPS | Alta | Sprint 1 |
-| DT-008 | Sem circuit breaker no FTPS | Alta | Sprint 1 |
-| DT-009 | Sem validação de integridade pós-upload | Média | Sprint 1 |
-| DT-010 | Verify não contacta servidor | Média | Sprint 2 |
-| DT-011 | Contexto global (activeContext) — sem suporte multi-workspace | Baixa | Futuro |
-| DT-012 | Cobertura de testes abaixo de 80% em 5 pacotes | Alta | Sprint 2 |
-| DT-013 | Sem paginação em ListProjects | Baixa | Futuro |
-| DT-014 | `cmd/*` sem testes | Média | Sprint 2 |
-| DT-015 | Sem mock de Transport para testes de integração | Alta | Sprint 2 |
-| DT-016 | Sem integração com git (commits, branches) | — | Sprint 2 |
-| DT-017 | `transports/ftp` e `mirror` sem testes | Alta | Sprint 2 |
-| DT-018 | `context.Background()` usado nas chamadas Transport — sem suporte a cancelamento | Baixa | Sprint 3 |
+| ID | Débito | Prioridade | Sprint | Status |
+|----|--------|:----------:|:------:|:------:|
+| DT-001 | `log/` package vazio — apenas delega para logger/ | Baixa | Sprint 2 | Pendente |
+| DT-002 | `history/crud.go` e `history/record.go` — dead code legado | Média | Sprint 2 | Pendente |
+| DT-003 | `history/db.go` — conexão DB separada, não usa database.DB | Média | Sprint 2 | Pendente |
+| DT-004 | Tabelas `deployments` e `audit_log` — dead schema | Média | Sprint 2 | Pendente |
+| DT-005 | Sem cleanup de artefatos temporários | Média | Sprint 1 | Pendente |
+| DT-006 | Rollback apenas lógico | Alta | Sprint 2 | Pendente |
+| DT-007 | Sem retry/backoff no FTPS | Alta | Sprint 1 | Pendente |
+| DT-008 | Sem circuit breaker no FTPS | Alta | Sprint 1 | Pendente |
+| DT-009 | Sem validação de integridade pós-upload | Média | Sprint 1 | Pendente |
+| DT-010 | Verify não contacta servidor | Média | Sprint 2 | Pendente |
+| DT-011 | Contexto global (activeContext) — sem suporte multi-workspace | Baixa | Futuro | Pendente |
+| DT-012 | Cobertura de testes abaixo de 80% em 5 pacotes | Alta | Sprint 2 | Parcial |
+| DT-013 | Sem paginação em ListProjects | Baixa | Futuro | Pendente |
+| DT-014 | `cmd/*` sem testes | Média | Sprint 2 | Pendente |
+| DT-015 | Sem mock de Transport para testes de integração | Alta | Sprint 2 | ✅ Resolvido |
+| DT-016 | Sem integração com git (commits, branches) | — | Sprint 2 | Pendente |
+| DT-017 | `transports/ftp` e `mirror` sem testes | Alta | Sprint 2 | ✅ Resolvido |
+| DT-018 | `context.Background()` usado nas chamadas Transport — sem suporte a cancelamento | Baixa | Sprint 3 | Pendente |
+| TD-001 | Data race em `api.go` — `s.srv` sem proteção concorrente | Alta | Sprint 3 | ✅ Resolvido |
+| TD-002 | `backend/webui/dist/` não commitado — `//go:embed` quebra em checkout limpo | Alta | Sprint 3 | ✅ Resolvido |
 
 ---
 
 ## 9. Riscos
 
-### Curto Prazo (Sprint 2)
+### Resolvidos (Sprints 2-3)
+| Risco | Mitigação |
+|-------|-----------|
+| Testes sem mock Transport quebram em CI | ✅ mockTransport criado em mirror_test.go |
+| Data race em api.go (TD-001) | ✅ sync.RWMutex adicionado em Server |
+| `webui/dist/` não commitado quebra build (TD-002) | ✅ Dist commitado + .gitignore atualizado |
+
+### Curto Prazo (Sprint 4)
 | Risco | Probabilidade | Impacto | Mitigação |
 |-------|:------------:|:-------:|-----------|
 | FTPS upload falhar sem retry | Média | Alto | Implementar retry exponencial + circuit breaker |
 | Rollback não reverter arquivos | Alta | Médio | Implementar restore de artefato anterior |
-| Testes sem mock Transport quebram em CI | Alta | Alto | Criar mock para Transport interface |
+| Testes transp/ftp sem cobertura | Alta | Médio | Criar testes com mock FTP server |
 | Workspace discovery pode corromper contexto | Baixa | Alto | Isolar activeContext ou torná-lo thread-safe |
-| Data race em api.go (TD-001) | Alta | Alto | Adicionar `sync.Mutex` no Server.Close |
+| `needsDelete` bug (StateNew+mirror_to_local) | Média | Baixo | Correção agendada Sprint 4 |
 
-### Médio Prazo (Sprint 3-4)
+### Médio Prazo (Sprint 5+)
 | Risco | Probabilidade | Impacto | Mitigação |
 |-------|:------------:|:-------:|-----------|
 | Dead code legado causa confusão | Alta | Baixo | Remover history/crud.go, record.go, db.go |
@@ -291,10 +305,17 @@ projects 1:N rollback_logs (FK)
 
 ## 11. Conclusão
 
-Sprint 1 produziu fundação sólida: Transport Layer completa com interface + factory/registry + adapter FTP. Deploy e Mirror foram desacoplados — nenhum pacote de domínio importa `jlaffaye/ftp`.
+### Sprints 1-3 Resumo
 
-A arquitetura foi validada na Sprint 1.5 com auditoria de dependências, testes completos (build + vet + test + race). Únicos pontos abertos:
-- Data race em `api.go` (TD-001) — pré-existente, endereçado na Sprint 3
-- Dependência `webui/dist/` não commitada (TD-002) — pré-existente
+- **Sprint 1**: Transport Layer completa — interface + factory/registry + adapter FTP. Deploy e Mirror desacoplados.
+- **Sprint 1.5**: Auditoria de dependências, validação de arquitetura, builds verdes.
+- **Sprint 2**: Engine Validation — 40+ novos testes para Mirror, Sync, Diff e History com mock Transport. Cobertura de testes subiu de ~35 para 60+ testes.
+- **Sprint 3**: Core Reliability — TD-001 (data race) e TD-002 (build reprodutível) resolvidos. `go test -race ./...` verde.
 
-**Próximo passo**: Sprint 2 — Engine Validation (testes com mock Transport para deploy/mirror).
+### Pendências para Sprint 4+
+
+- `needsDelete` bug (StateNew + mirror_to_local) — baixo impacto, corrigir na Sprint 4
+- 8 débitos técnicos de média prioridade ainda abertos (DT-001 a DT-010)
+- Testes de CLI e Transport/FTP ainda sem cobertura
+
+**Próximo passo**: Sprint 4 — Performance e correção do bug needsDelete.

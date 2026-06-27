@@ -1,4 +1,4 @@
-﻿package hardening
+package hardening
 
 import (
 	"crypto/sha256"
@@ -12,10 +12,10 @@ import (
 
 // RetryConfig controls the exponential backoff retry behavior.
 type RetryConfig struct {
-	MaxAttempts     int
-	InitialBackoff  time.Duration
-	MaxBackoff      time.Duration
-	BackoffFactor   float64
+	MaxAttempts    int
+	InitialBackoff time.Duration
+	MaxBackoff     time.Duration
+	BackoffFactor  float64
 }
 
 func DefaultRetryConfig() RetryConfig {

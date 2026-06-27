@@ -1,0 +1,116 @@
+#!/usr/bin/env sh
+# FileENIAC pre-commit hook (Husky v9+ style)
+# Runs fast lint/build checks on staged changes. Targets <30s.
+
+set -e
+
+# Resolve repo root regardless of where git invokes us from.
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+cd "$REPO_ROOT"
+
+# Resolve a bash that can handle arrays/pipes on Windows too.
+# Husky on Windows uses Git Bash (sh.exe); fall back to /bin/bash if needed.
+if command -v bash >/dev/null 2>&1; then
+  SHELL_BIN="bash"
+else
+  SHELL_BIN="sh"
+fi
+
+run_step() {
+  label="$1"
+  shift
+  printf '\n[husky] %s\n' "$label"
+  start=$(date +%s)
+  if "$@"; then
+    end=$(date +%s)
+    printf '[husky] %s OK (%ss)\n' "$label" "$((end - start))"
+  else
+    rc=$?
+    end=$(date +%s)
+    printf '[husky] %s FAILED (%ss, exit %s)\n' "$label" "$((end - start))" "$rc" >&2
+    exit $rc
+  fi
+}
+
+available() {
+  command -v "$1" >/dev/null 2>&1
+}
+
+# --- 1) Backend: gofmt -l + go build ---
+run_backend() {
+  if ! available go; then
+    printf '[husky] go not found in PATH; skipping backend checks.\n'
+    return 0
+  fi
+  # Format check: fail if any .go file would be reformatted.
+  # Run on all backend go files (not just staged) since gofmt check is fast
+  # and avoids missing files referenced by the build.
+  if [ -d backend ]; then
+    cd "$REPO_ROOT/backend"
+    out=$(gofmt -l . 2>&1 || true)
+    if [ -n "$out" ]; then
+      printf '%s\n' "$out" >&2
+      printf '[husky] gofmt: above files need formatting. Run `gofmt -w backend/`.\n' >&2
+      return 1
+    fi
+    cd "$REPO_ROOT"
+    go build ./... >/dev/null 2>&1 || {
+      printf '[husky] go build ./... failed.\n' >&2
+      return 1
+    }
+  fi
+  return 0
+}
+
+# --- 2) Frontend: tsc --noEmit ---
+run_frontend() {
+  if ! available npx; then
+    printf '[husky] npx not found in PATH; skipping frontend checks.\n'
+    return 0
+  fi
+  if [ -f apps/desktop/tsconfig.json ]; then
+    (cd "$REPO_ROOT/apps/desktop" && npx --no-install tsc --noEmit) || {
+      printf '[husky] tsc --noEmit failed.\n' >&2
+      return 1
+    }
+  fi
+  return 0
+}
+
+# --- 3) Generic: whitespace check on staged files ---
+run_whitespace() {
+  # Block commits that introduce tabs or trailing whitespace into non-binary
+  # tracked files. Skip the binaries that already exist in git (e.g. .exe, .dll,
+  # .ico) using git's textconv attribute when possible; here we simply skip
+  # files git marks as binary.
+  bad=0
+  # Get list of staged files; filter binary via `git diff --cached --numstat`
+  # (binary files emit '-' '-' for added lines).
+  files=$(git diff --cached --name-only --diff-filter=ACM)
+  if [ -z "$files" ]; then
+    return 0
+  fi
+  for f in $files; do
+    [ -f "$f" ] || continue
+    # Skip files git considers binary.
+    if [ "$(git diff --cached --numstat -- "$f" | awk '{print $1}')" = "-" ]; then
+      continue
+    fi
+    # Trailing whitespace (spaces or tab) at EOL.
+    if grep -nE ' +$' "$f" >/dev/null 2>&1 || grep -nP "\t" "$f" >/dev/null 2>&1; then
+      printf '[husky] whitespace issue in: %s\n' "$f" >&2
+      bad=1
+    fi
+  done
+  return $bad
+}
+
+# Run steps sequentially. They are independent so could be parallelized with
+# a FIFO and tee, but on Windows background processes complicate signals and
+# the total time is already low (build + tsc dominate). Sequential keeps
+# output clean.
+run_step "backend (gofmt + go build ./...)" run_backend
+run_step "frontend (tsc --noEmit)" run_frontend
+run_step "whitespace check" run_whitespace
+
+printf '\n[husky] pre-commit checks passed.\n'

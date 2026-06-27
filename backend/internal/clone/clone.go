@@ -1,4 +1,4 @@
-﻿package clone
+package clone
 
 import (
 	"fmt"
@@ -13,10 +13,10 @@ import (
 )
 
 type Result struct {
-	Path      string `json:"path"`
-	Branch    string `json:"branch"`
-	CommitSHA string `json:"commit_sha,omitempty"`
-	DurationMS int64 `json:"duration_ms"`
+	Path       string `json:"path"`
+	Branch     string `json:"branch"`
+	CommitSHA  string `json:"commit_sha,omitempty"`
+	DurationMS int64  `json:"duration_ms"`
 }
 
 func Clone(repoURL, cloneDir, branch string) (*Result, error) {
