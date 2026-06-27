@@ -127,7 +127,7 @@ func TestApply_LocalToMirror(t *testing.T) {
 	}
 }
 
-func TestApply_MirrorToLocal_CurrentBehavior(t *testing.T) {
+func TestApply_MirrorToLocal_CopiesNewFiles(t *testing.T) {
 	tmpDir := t.TempDir()
 	wsPath := filepath.Join(tmpDir, "testws")
 	projectPath := filepath.Join(tmpDir, "project")
@@ -173,11 +173,12 @@ func TestApply_MirrorToLocal_CurrentBehavior(t *testing.T) {
 		t.Fatalf("Apply failed: %v", err)
 	}
 
-	// BUG: needsDelete returns true for StateNew + mirror_to_local,
-	// so Apply treats new-in-mirror files as deletions, not copies.
-	// File should NOT exist in local due to this current behavior.
-	if _, statErr := os.Stat(filepath.Join(projectPath, "from_mirror.txt")); !os.IsNotExist(statErr) {
-		t.Error("BUG CONFIRMED: new-in-mirror file should not be copied to local (inverted needsDelete)")
+	data, err := os.ReadFile(filepath.Join(projectPath, "from_mirror.txt"))
+	if err != nil {
+		t.Fatal("new-in-mirror file should be COPIED to local, not deleted")
+	}
+	if string(data) != "from mirror" {
+		t.Errorf("expected correct content, got %s", string(data))
 	}
 }
 
@@ -317,8 +318,8 @@ func TestNeedsDelete_LocalToMirror(t *testing.T) {
 		{"local_to_mirror new", diff.StateNew, "local_to_mirror", false},
 		{"local_to_mirror modified", diff.StateModified, "local_to_mirror", false},
 		{"local_to_mirror synced", diff.StateSynced, "local_to_mirror", false},
-		{"mirror_to_local removed", diff.StateRemoved, "mirror_to_local", false},
-		{"mirror_to_local new", diff.StateNew, "mirror_to_local", true},
+		{"mirror_to_local removed", diff.StateRemoved, "mirror_to_local", true},
+		{"mirror_to_local new", diff.StateNew, "mirror_to_local", false},
 		{"mirror_to_local modified", diff.StateModified, "mirror_to_local", false},
 		{"mirror_to_local synced", diff.StateSynced, "mirror_to_local", false},
 	}

@@ -136,7 +136,7 @@ func needsDelete(f *diff.FileDiff, direction string) bool {
 	if direction == "local_to_mirror" {
 		return f.Status == diff.StateRemoved
 	}
-	return f.Status == diff.StateNew
+	return f.Status == diff.StateRemoved
 }
 
 // GenerateManifest creates a sync-manifest.json record for the operation.
