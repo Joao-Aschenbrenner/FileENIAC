@@ -1,4 +1,4 @@
-﻿package history
+package history
 
 import (
 	"path/filepath"
@@ -49,13 +49,13 @@ func TestRecordDeploy(t *testing.T) {
 	s := NewService(db)
 
 	log := &DeployLog{
-		ProjectID:   1,
-		DeployID:    "dep_test_001",
-		Status:      "success",
-		CommitHash:  "abc123",
+		ProjectID:     1,
+		DeployID:      "dep_test_001",
+		Status:        "success",
+		CommitHash:    "abc123",
 		CommitMessage: "Initial deploy",
-		Branch:      "main",
-		ArtifactHash: "sha256:...",
+		Branch:        "main",
+		ArtifactHash:  "sha256:...",
 	}
 
 	id, err := s.RecordDeploy(log)
@@ -147,6 +147,157 @@ func TestGetRecentEvents(t *testing.T) {
 
 	if len(events) < 2 {
 		t.Errorf("expected at least 2 events, got %d", len(events))
+	}
+}
+
+func TestRecordDeploy_InvalidProject(t *testing.T) {
+	db := setupDB(t)
+	defer db.Close()
+
+	s := NewService(db)
+
+	log := &DeployLog{
+		ProjectID:  999,
+		DeployID:   "invalid_proj",
+		Status:     "success",
+		CommitHash: "abc",
+		Branch:     "main",
+	}
+
+	_, err := s.RecordDeploy(log)
+	if err == nil {
+		t.Error("expected error for non-existent project ID")
+	}
+}
+
+func TestGetDeployHistory_NoRecords(t *testing.T) {
+	db := setupDB(t)
+	defer db.Close()
+
+	s := NewService(db)
+
+	logs, err := s.GetDeployHistory(1, 10)
+	if err != nil {
+		t.Fatalf("GetDeployHistory failed: %v", err)
+	}
+
+	if len(logs) != 0 {
+		t.Errorf("expected 0 logs, got %d", len(logs))
+	}
+}
+
+func TestGetLastDeploy_NoDeploys(t *testing.T) {
+	db := setupDB(t)
+	defer db.Close()
+
+	s := NewService(db)
+
+	_, err := s.GetLastDeploy(1)
+	if err == nil {
+		t.Error("expected error when no deploys exist")
+	}
+}
+
+func TestGetRecentEvents_Empty(t *testing.T) {
+	db := setupDB(t)
+	defer db.Close()
+
+	s := NewService(db)
+
+	events, err := s.GetRecentEvents(10)
+	if err != nil {
+		t.Fatalf("GetRecentEvents failed: %v", err)
+	}
+
+	if len(events) != 0 {
+		t.Errorf("expected 0 events, got %d", len(events))
+	}
+}
+
+func TestRecordRollback_NonexistentDeploy(t *testing.T) {
+	db := setupDB(t)
+	defer db.Close()
+
+	s := NewService(db)
+
+	log := &RollbackLog{
+		DeployID:  "nonexistent",
+		ProjectID: 1,
+		Reason:    "test",
+		Status:    "completed",
+	}
+
+	// Current behavior: rollback logs are recorded independently of deploy existence
+	id, err := s.RecordRollback(log)
+	if err != nil {
+		t.Fatalf("RecordRollback should succeed: %v", err)
+	}
+	if id <= 0 {
+		t.Error("expected positive ID")
+	}
+}
+
+func TestRecordDeploy_ClosedDB(t *testing.T) {
+	db := setupDB(t)
+	db.Close() // Close the DB to test unavailable database
+
+	s := NewService(db)
+
+	log := &DeployLog{
+		ProjectID:     1,
+		DeployID:      "dep_closed",
+		Status:        "success",
+		CommitHash:    "abc",
+		CommitMessage: "closed db test",
+	}
+
+	_, err := s.RecordDeploy(log)
+	if err == nil {
+		t.Error("expected error when database is closed")
+	}
+}
+
+func TestGetDeployHistory_ClosedDB(t *testing.T) {
+	db := setupDB(t)
+	db.Close()
+
+	s := NewService(db)
+
+	_, err := s.GetDeployHistory(1, 10)
+	if err == nil {
+		t.Error("expected error when database is closed")
+	}
+}
+
+func TestGetEventList(t *testing.T) {
+	db := setupDB(t)
+	defer db.Close()
+
+	s := NewService(db)
+
+	s.RecordEvent(EventDeployStarted, "First deploy", nil)
+	s.RecordEvent(EventDeploySuccess, "Deploy completed", map[string]interface{}{"deploy_id": "dep_001"})
+
+	// Filter by event type
+	events, err := s.GetEventList(EventDeploySuccess, 10, 0)
+	if err != nil {
+		t.Fatalf("GetEventList failed: %v", err)
+	}
+
+	if len(events) != 1 {
+		t.Errorf("expected 1 event, got %d", len(events))
+	}
+	if events[0].EventType != EventDeploySuccess {
+		t.Errorf("expected %s, got %s", EventDeploySuccess, events[0].EventType)
+	}
+
+	// Without filter (all events)
+	all, err := s.GetEventList("", 10, 0)
+	if err != nil {
+		t.Fatalf("GetEventList (no filter) failed: %v", err)
+	}
+	if len(all) != 2 {
+		t.Errorf("expected 2 events, got %d", len(all))
 	}
 }
 

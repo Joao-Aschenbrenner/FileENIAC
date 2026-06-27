@@ -26,6 +26,11 @@ type Snapshot struct {
 	CompletedAt string `json:"completed_at"`
 }
 
+// newTransportFn is a package-level mockable function for creating transport clients.
+var newTransportFn = func(cfg transports.TransportConfig) (transports.Transport, error) {
+	return transports.New(cfg)
+}
+
 type Engine struct{}
 
 func New() *Engine {
@@ -89,7 +94,7 @@ func (e *Engine) Create(ctx *workspace.Context, projectName string) (*Snapshot, 
 		Timeout:  120 * time.Second,
 	}
 
-	client, err := transports.New(transportCfg)
+	client, err := newTransportFn(transportCfg)
 	if err != nil {
 		e.failSnapshot(ctx, proj.ID, snapshotID, err)
 		return nil, fmt.Errorf("ftps connection failed: %w", err)
