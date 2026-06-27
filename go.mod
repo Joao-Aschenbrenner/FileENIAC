@@ -1,6 +1,6 @@
 module github.com/ENIACSystems/FileENIAC
 
-go 1.25
+go 1.26
 
 require (
 	github.com/BurntSushi/toml v1.3.2

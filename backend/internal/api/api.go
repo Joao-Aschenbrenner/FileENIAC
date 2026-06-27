@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/ENIACSystems/FileENIAC/backend/internal/heartbeat"
@@ -26,7 +27,7 @@ import (
 	"github.com/ENIACSystems/FileENIAC/backend/internal/registry"
 	"github.com/ENIACSystems/FileENIAC/backend/internal/repair"
 	"github.com/ENIACSystems/FileENIAC/backend/internal/status"
-	"github.com/ENIACSystems/FileENIAC/backend/internal/sync"
+	syncpkg "github.com/ENIACSystems/FileENIAC/backend/internal/sync"
 	"github.com/ENIACSystems/FileENIAC/backend/internal/validate"
 	"github.com/ENIACSystems/FileENIAC/backend/internal/workspace"
 	"go.uber.org/zap"
@@ -35,6 +36,7 @@ import (
 type Server struct {
 	addr       string
 	mux        *http.ServeMux
+	mu         sync.RWMutex
 	srv        *http.Server
 	background *bghealth.BackgroundRunner
 }
@@ -92,7 +94,9 @@ func (s *Server) routes() {
 
 func (s *Server) ListenAndServe() error {
 	srv := &http.Server{Addr: s.addr, Handler: s.corsMiddleware(s.mux)}
+	s.mu.Lock()
 	s.srv = srv
+	s.mu.Unlock()
 	return srv.ListenAndServe()
 }
 
@@ -104,7 +108,9 @@ func (s *Server) ListenDynamic() (string, error) {
 	actualAddr := listener.Addr().String()
 	log.L().Info("api server listening (dynamic)", zap.String("addr", actualAddr))
 	srv := &http.Server{Handler: s.corsMiddleware(s.mux)}
+	s.mu.Lock()
 	s.srv = srv
+	s.mu.Unlock()
 	go srv.Serve(listener)
 	return actualAddr, nil
 }
@@ -135,17 +141,23 @@ func (s *Server) corsMiddleware(next http.Handler) http.Handler {
 }
 
 func (s *Server) Close() error {
-	if s.srv != nil {
+	s.mu.RLock()
+	srv := s.srv
+	s.mu.RUnlock()
+	if srv != nil {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
-		return s.srv.Shutdown(ctx)
+		return srv.Shutdown(ctx)
 	}
 	return nil
 }
 
 func (s *Server) Addr() string {
-	if s.srv != nil {
-		return s.srv.Addr
+	s.mu.RLock()
+	srv := s.srv
+	s.mu.RUnlock()
+	if srv != nil {
+		return srv.Addr
 	}
 	return s.addr
 }
@@ -642,7 +654,7 @@ func (s *Server) handleSyncExec() http.HandlerFunc {
 			return
 		}
 
-		se := sync.New()
+		se := syncpkg.New()
 		suggestion := se.Plan(report)
 
 		if err := se.Apply(ctx, body.Project, report, body.Direction, body.Confirm); err != nil {
