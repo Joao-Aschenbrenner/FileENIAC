@@ -24,8 +24,8 @@
 
 | Artifact | Location | Size | SHA256 |
 |----------|----------|------|--------|
-| Windows Installer (NSIS) | `apps/desktop/src-tauri/target/release/bundle/nsis/FileENIAC_0.1.2_x64-setup.exe` | ~4 MB | CE5316AC3EC5FD1AB842E986BC3F8CEC7B548889954711F16C3CF9A368BBAE2F |
-| Source tarball | GitHub release source archive | — | AB6154E37B4670296619E423C5CAC15F69A067AB9961C15DFBB5FF4AB0930776 |
+| Windows Installer (NSIS) | `apps/desktop/src-tauri/target/release/bundle/nsis/FileENIAC_0.1.2_x64-setup.exe` | ~5 MB | 0B64F26317F6E1CC231E6C6C87DB9091EBA0A288FA7C9835C00E63876BB34C4C |
+| Source tarball | GitHub release source archive | — | 8DA239B49CF5571E121B0A66D496F145EF234948BFB3FB8F78F2AE5344F49799 |
 
 ---
 
@@ -39,6 +39,13 @@
 | docs/plans/FIX_PLAN_v0.1.0_AUDIT.md | ✅ Published |
 
 ---
+
+## Packaging
+
+| Check | Status |
+|-------|--------|
+| WebView2 bootstrapper bundled | ✅ `embedBootstrapper` |
+| NSIS license page shown before install | ✅ `bundle.licenseFile` |
 
 ## Security
 
