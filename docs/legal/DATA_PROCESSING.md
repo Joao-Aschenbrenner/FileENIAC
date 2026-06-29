@@ -34,13 +34,11 @@ delete data directory).
 **Location**: `{FILEENIAC_DATA_DIR}/vault.db` (default: `./data/vault.db`)
 
 **Contains**:
-- GitHub OAuth tokens
+- GitHub personal access tokens
 - FTPS passwords
 - API session tokens
 
-**Encryption**: AES-256-GCM with key derived from `FILEENIAC_VAULT_PASSWORD`
-via Argon2id. If the environment variable is not set, credentials are
-stored with no encryption.
+**Encryption**: AES-256-GCM with unique 256-bit key generated per workspace
 
 **Retention**: Until explicitly deleted by the user.
 
@@ -77,19 +75,17 @@ files unless you explicitly initiate a delete operation.
 **Sent to Developer**: Never, unless you manually attach them to a bug report.
 
 ## Network Data Flows
-
-### GitHub OAuth
+### GitHub Personal Access Token
 
 ```
+
 Your Device  →  GitHub API (api.github.com)
-           ←  Access Token
+           ←  API Response
 ```
 
-- FileENIAC initiates OAuth with GitHub
-- GitHub handles the authentication flow directly
-- FileENIAC receives an access token
-- The token is stored in the Vault
-- **Developer has no access** to the token or OAuth flow
+- FileENIAC sends your GitHub personal access token to GitHub's API
+- The token is stored encrypted in the Vault
+- **Developer has no access** to the token
 
 ### Git Operations
 
@@ -145,7 +141,7 @@ User Configures Workspace
          ↓
 Workspace Path Stored in SQLite (workspaces table)
          ↓
-GitHub OAuth Token Stored in Vault (encrypted)
+GitHub Personal Access Token Stored in Vault (encrypted)
          ↓
 FTPS Credentials Stored in Vault (encrypted)
          ↓

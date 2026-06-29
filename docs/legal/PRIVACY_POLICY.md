@@ -2,7 +2,7 @@
 # FileENIAC Privacy Policy
 
 **Last updated**: 2026-06-28
-**Version**: 1.0
+**Version**: 1.1
 
 ## Overview
 
@@ -16,11 +16,17 @@ FileENIAC does not:
 - Send telemetry or analytics data of any kind
 - Track usage or behavior
 - Contact any remote servers except those you explicitly configure
-  (your GitHub account and your FTPS servers)
+  (your GitHub account, your Git providers, and your FTPS servers)
 - Store data in cloud services operated by the developer
 - Use cookies or tracking technologies
 - Collect device identifiers
 - Log keystrokes or screen content
+
+FileENIAC may contact:
+- **GitHub** — for repository operations and optional update checks
+- **Git providers** (GitHub, GitLab, etc.) — for git clone/push/pull
+- **Your FTPS servers** — for file deployments configured by you
+- **GitHub Releases API** — to check for available updates
 
 ## Data You Store Locally
 
@@ -36,7 +42,7 @@ When you use FileENIAC, the following data is stored **locally on your device**:
 
 ### Authentication Data
 
-- GitHub OAuth tokens (stored in Vault, encrypted)
+- GitHub personal access tokens (stored in Vault, encrypted)
 - FTPS credentials (stored in Vault, encrypted)
 - API session tokens (stored in SQLite, per-session)
 
@@ -50,10 +56,13 @@ When you use FileENIAC, the following data is stored **locally on your device**:
 
 ### Encryption at Rest
 
-Sensitive credentials (GitHub tokens, FTPS passwords) are encrypted using
-AES-256-GCM. The encryption key is derived from the `FILEENIAC_VAULT_PASSWORD`
-environment variable using Argon2id. **If you do not set this variable, the
-Vault falls back to no encryption.**
+Sensitive credentials (GitHub personal access tokens, FTPS passwords) are
+encrypted using AES-256-GCM. When a workspace is created, FileENIAC generates
+a unique 256-bit encryption key and stores it in the workspace configuration
+(`.eniac/config.toml`). This key is local to your installation.
+
+The Vault is always encrypted. There is no fallback to plaintext storage
+for credentials.
 
 ### Local Storage Only
 
@@ -70,9 +79,10 @@ developer. Your workspace data remains entirely under your control.
 
 The only scenarios in which data leaves your device:
 
-1. **GitHub OAuth**: When you authenticate with GitHub, the OAuth token
-   is exchanged directly between your device and GitHub's servers.
-   FileENIAC stores only the resulting access token locally.
+1. **GitHub Personal Access Token**: When you configure a GitHub token,
+   it is stored locally in the Vault (encrypted). It is sent directly to
+   GitHub's API when you perform git operations or repository management.
+   FileENIAC stores only the token locally; the developer has no access to it.
 
 2. **FTPS Operations**: When you deploy files via FTPS, file data is
    transferred directly between your device and your configured FTPS server.
@@ -99,6 +109,10 @@ them.
 **How to delete logs**: Delete the log directory or configure a log rotation
 policy in the application settings.
 
+**Important**: Never paste logs containing credentials, tokens, private
+repository names, server addresses, or sensitive file paths into public
+issues. Review logs before sharing.
+
 ## Version Updates
 
 FileENIAC may check for new versions by making a request to the GitHub Releases
@@ -106,15 +120,16 @@ API (`api.github.com/repos/Joao-Aschenbrenner/FileENIAC/releases`). This request
 does not include any personal data. It only retrieves version metadata to
 determine if an update is available.
 
-## Your Rights (LGPD / GDPR / CCPA)
+## Your Rights (LGPD / GDPR)
 
 Because all data is stored locally on your device, you have full control:
 
 - **Access**: All your data is in the `FILEENIAC_DATA_DIR` directory
-- **Correction**: Edit the SQLite database or configuration files directly
+- **Correction**: Use FileENIAC's settings to update workspace configuration
+  or server profiles
 - **Deletion**: Delete the `FILEENIAC_DATA_DIR` directory to remove all data
 - **Portability**: Export workspace data by copying the data directory
-- **Revocation**: Delete the data directory or individual records
+- **Revocation**: Delete the data directory or clear credentials in settings
 
 To request deletion of data associated with a support request, contact the
 developer with the issue ID — no automatic data retention exists.
@@ -148,5 +163,5 @@ For privacy-related questions or to report concerns:
 | FTPS passwords | Your device (Vault) | No |
 | Deploy history | Your device | No |
 | Application logs | Your device | No |
-| GitHub OAuth exchange | GitHub servers | No |
+| GitHub API operations | GitHub servers | No |
 | FTPS file transfers | Your FTPS server | No |

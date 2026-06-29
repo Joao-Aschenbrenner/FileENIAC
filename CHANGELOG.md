@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Legal Hardening
+
+- [x] **Legal docs separated:** `LICENSE`, `TERMS_OF_USE.md`, `PRIVACY_POLICY.md`,
+      `LGPD.md`, `DATA_PROCESSING.md`, `THIRD_PARTY_SERVICES.md`,
+      `SECURITY_AND_CREDENTIALS.md`, `INSTALLER_NOTICE.md` — each document now
+      has a distinct purpose, no mixing of MIT license with terms of use.
+- [x] **SPDX corrected:** `SPDX-LICENSE-IDENTIFIER` → `SPDX-License-Identifier`
+      in all legal documents.
+- [x] **Vault encryption description fixed:** Removed references to the
+      non-existent `FILEENIAC_VAULT_PASSWORD` environment variable. Vault uses
+      auto-generated 256-bit AES-GCM key per workspace. No unencrypted fallback.
+- [x] **OAuth → Personal Access Token:** Corrected all references to "GitHub OAuth"
+      to accurately describe GitHub personal access token usage.
+- [x] **Removed dangerous SQLite advice:** Replaced "edit SQLite database directly"
+      with "use application settings" across LGPD and Privacy docs.
+- [x] **Termination/Amendments fixed:** Terms no longer claim developer can
+      "terminate" MIT license rights. Changes apply to future releases only.
+- [x] **CCPA removed:** Changed to "Privacy Rights (LGPD/GDPR)".
+- [x] **Logs warning added:** Explicit warning not to paste credentials in logs.
+- [x] **THIRD_PARTY_SERVICES.md created:** Documents all third-party interactions.
+- [x] **SECURITY_AND_CREDENTIALS.md created:** Rotation guides, log safety tips.
+- [x] **INSTALLER_EULA.md → INSTALLER_NOTICE.md:** Rewritten to avoid conflict
+      with MIT license (no "revocable license" or "do not redistribute" clauses).
+- [x] **README updated:** Added link section to all legal documents.
+- [x] **DISCLAIMER.md corrected:** Removed `FILEENIAC_VAULT_PASSWORD` references,
+      fixed "Continued use" clause.
+
 ## [0.1.2] - 2026-06-29
 
 ### Security

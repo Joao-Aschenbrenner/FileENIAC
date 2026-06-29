@@ -15,7 +15,7 @@ FileENIAC/
 │   │   ├── deploy/     # Deploy orchestration
 │   │   ├── sync/       # Sync engine + mirror
 │   │   ├── git/        # Git operations
-│   │   ├── github/     # GitHub OAuth + API
+│   │   ├── github/     # GitHub API + personal access token
 │   │   ├── history/    # History + audit
 │   │   ├── health/     # Health checks
 │   │   └── agents/     # Agent API (future)
@@ -36,3 +36,16 @@ FileENIAC/
 | 3 | GitHub | OAuth, Discovery, Bootstrap |
 | 4 | Desktop | Dashboard, UI completa |
 | 5 | Agent | API, Observabilidade, IA |
+
+## Legal
+
+- [MIT License](LICENSE)
+- [Terms of Use](docs/legal/TERMS_OF_USE.md)
+- [Privacy Policy](docs/legal/PRIVACY_POLICY.md)
+- [Third-Party Services](docs/legal/THIRD_PARTY_SERVICES.md)
+- [LGPD Compliance](docs/legal/LGPD.md)
+- [Data Processing](docs/legal/DATA_PROCESSING.md)
+- [Security Policy](docs/legal/SECURITY.md)
+- [Security & Credential Management](docs/legal/SECURITY_AND_CREDENTIALS.md)
+- [Installer Notice](docs/legal/INSTALLER_NOTICE.md)
+- [Vulnerability Disclosure](docs/legal/VULNERABILITY_DISCLOSURE.md)

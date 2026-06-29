@@ -29,9 +29,10 @@ This includes, without limitation:
   (network issues, server configuration, permission problems). Verify
   deployments manually after execution.
 
-- **Credential exposure**: If you do not set `FILEENIAC_VAULT_PASSWORD`,
-  credentials are stored unencrypted. You accept the risk of storing
-  credentials without encryption.
+- **Credential exposure**: Credentials are stored encrypted using AES-256-GCM
+  with a unique key per workspace, but the encryption key is stored in the
+  workspace configuration file. Ensure your data directory is properly
+  secured.
 
 - **File corruption**: Ensure you have backups of important files before
   using workspace operations that modify files.
@@ -68,8 +69,8 @@ The developer is not responsible for:
 - **Local security**: If your device is compromised, FileENIAC data
   can be accessed. The developer cannot protect against local threats.
 
-- **Credential vault**: Encryption requires `FILEENIAC_VAULT_PASSWORD`.
-  Without it, credentials are stored in plain text.
+- **Credential vault**: The Vault encrypts credentials using AES-256-GCM.
+  The encryption key is auto-generated and stored in the workspace config.
 
 - **No code signing**: The Windows installer is not code-signed.
   Windows SmartScreen may display warnings.
@@ -86,8 +87,7 @@ implemented in any specific timeframe or at all.
 ## Changes to This Disclaimer
 
 This disclaimer may be updated. The "Last updated" date reflects the
-most recent revision. Continued use of FileENIAC after any revision
-constitutes acceptance of the revised disclaimer.
+most recent revision. Changes apply to future releases only.
 
 ## Governing Law
 

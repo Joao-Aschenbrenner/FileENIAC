@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 # FileENIAC Security Policy
 
-**Version**: 1.0
+**Version**: 1.1
 **Last updated**: 2026-06-28
 
 ## Security Model
@@ -13,26 +13,24 @@ is the user's device. The developer cannot access any data stored by FileENIAC.
 
 ### Required
 
-- `FILEENIAC_VAULT_PASSWORD`: Encryption password for the credential Vault.
-  **Must be set for credential encryption to be active.** If not set, the
-  Vault stores credentials with no encryption.
+None. FileENIAC generates a unique encryption key per workspace automatically.
 
 ### Optional
 
 - `FILEENIAC_DATA_DIR`: Data directory (default: `./data`)
 - `FILEENIAC_API_TOKEN`: Bearer token for API authentication
 - `FILEENIAC_API_PORT`: Desktop API port (default: `8080`)
+- `FILEENIAC_DB_MAX_OPEN_CONNS`: SQLite max open connections (default: 1)
 
 **Never commit these values to version control.** Use environment variables
 or a secrets manager in production.
 
 ## Credential Storage
 
-- GitHub OAuth tokens and FTPS passwords are stored in `vault.db`
-- The Vault uses AES-256-GCM encryption with a key derived from
-  `FILEENIAC_VAULT_PASSWORD` via Argon2id
-- If `FILEENIAC_VAULT_PASSWORD` is not set, credentials are stored in
-  **plain text** — always set this variable
+- GitHub personal access tokens and FTPS passwords are stored in `vault.db`
+- The Vault uses AES-256-GCM encryption with a unique 256-bit key
+  generated when a workspace is created
+- The Vault is always encrypted — there is no unencrypted fallback
 
 ## Network Security
 
@@ -72,17 +70,14 @@ See `VULNERABILITY_DISCLOSURE.md` for the disclosure process.
 
 ## Known Limitations
 
-1. **Vault fallback**: If `FILEENIAC_VAULT_PASSWORD` is not set, credentials
-   are stored unencrypted in `vault.db`.
-
-2. **No code signing**: The NSIS installer is not code-signed, so Windows
+1. **No code signing**: The NSIS installer is not code-signed, so Windows
    SmartScreen may display a warning.
 
-3. **Local-only security**: The primary security boundary is the device.
+2. **Local-only security**: The primary security boundary is the device.
    If malware has access to the device, it can read FileENIAC's data
    directory.
 
-4. **No multi-user isolation**: FileENIAC is a single-user desktop
+3. **No multi-user isolation**: FileENIAC is a single-user desktop
    application. All users on the same device share the same data.
 
 ## Security Updates
@@ -97,11 +92,10 @@ See `VULNERABILITY_DISCLOSURE.md` for coordinated disclosure guidelines.
 
 ## Best Practices for Users
 
-1. **Set `FILEENIAC_VAULT_PASSWORD`**: Always enable Vault encryption
-2. **Protect your data directory**: Ensure `$FILEENIAC_DATA_DIR` is not
+1. **Protect your data directory**: Ensure `$FILEENIAC_DATA_DIR` is not
    accessible to unauthorized users
-3. **Use strong FTPS passwords**: Unique per server
-4. **Rotate credentials periodically**: Especially if you suspect compromise
-5. **Keep the application updated**: Use the latest stable release
-6. **Secure your device**: Use full-disk encryption, screen lock, and
+2. **Use strong FTPS passwords**: Unique per server
+3. **Rotate credentials periodically**: Especially if you suspect compromise
+4. **Keep the application updated**: Use the latest stable release
+5. **Secure your device**: Use full-disk encryption, screen lock, and
    antivirus software

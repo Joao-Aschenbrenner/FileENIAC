@@ -2,7 +2,7 @@
 # FileENIAC Terms of Use
 
 **Effective date**: 2026-06-28
-**Version**: 1.0
+**Version**: 1.1
 
 ## 1. Acceptance
 
@@ -11,16 +11,12 @@ Terms of Use. If you do not agree, do not install or use the software.
 
 ## 2. License
 
-FileENIAC is provided under the MIT License. You are granted a non-exclusive,
-royalty-free license to use, copy, modify, merge, publish, distribute,
-sublicense, and/or sell copies of the software, subject to the following
-condition:
+FileENIAC source code is licensed under the MIT License.
+See the `LICENSE` file for the full license text.
 
-> The above copyright notice and this permission notice shall be included in
-> all copies or substantial portions of the Software.
-
-The MIT License grants you broad rights. It does not grant you any rights
-to the FileENIAC trademarks, logos, or branding.
+These Terms apply to the official FileENIAC binary distributions, installer,
+branding, documentation, support channels, and official project infrastructure.
+They do not restrict rights granted under the MIT License for the source code.
 
 ## 3. Allowed Use
 
@@ -57,13 +53,17 @@ respective Terms of Service of those platforms.
 
 You are responsible for:
 
-- Keeping your `FILEENIAC_VAULT_PASSWORD` secure
-- Ensuring the device running FileENIAC is protected from unauthorized access
+- Keeping your device secure and protected from unauthorized access
+- Ensuring the FileENIAC data directory is not accessible to other users
 - Using strong, unique credentials for FTPS servers
 - Reviewing and limiting access permissions for deployed content
 
-**Never share your vault password or API tokens.** The developer will never
-ask for your vault password or FTPS credentials.
+The Vault encrypts credentials using AES-256-GCM with a key that is
+auto-generated when a workspace is created. This key is stored locally
+in your workspace configuration and is unique per installation.
+
+**Never share your credentials or workspace configuration files.**
+The developer will never ask for your credentials.
 
 If you believe a credential has been compromised, rotate it immediately
 in both FileENIAC and the affected service.
@@ -99,10 +99,12 @@ This includes, without limitation:
 
 ## 9. Indemnification
 
-You agree to indemnify, defend, and hold harmless the developer from and against
-any and all claims, damages, losses, costs, and expenses (including reasonable
-legal fees) arising from your use of FileENIAC, your violation of these Terms,
-or your violation of any rights of a third party.
+To the maximum extent permitted by law, you are responsible for your use
+of FileENIAC, including deployments, credentials, server access, and
+compliance with third-party terms. You agree to indemnify, defend, and
+hold harmless the developer from and against any claims, damages, losses,
+costs, and expenses arising from your use of FileENIAC or your violation
+of these Terms.
 
 ## 10. Use by Businesses
 
@@ -133,8 +135,10 @@ applicable export control laws and regulations.
 ## 13. Termination
 
 These Terms are effective until terminated. Your rights under the MIT License
-are perpetual, provided you comply with all terms. The developer may
-discontinue or suspend FileENIAC at any time without notice.
+are perpetual, provided you comply with all terms. The maintainers may
+discontinue official releases, support, update services, or project
+infrastructure. This does not terminate rights already granted under the
+MIT License for copies of the source code you have received.
 
 Sections 7 (No Warranty), 8 (Limitation of Liability), and 9 (Indemnification)
 survive any termination.
@@ -158,10 +162,9 @@ FileENIAC.
 
 ## 17. Amendments
 
-The developer reserves the right to amend these Terms. Any amendment will
-be posted in the repository at `docs/legal/TERMS_OF_USE.md`. Continued use
-of the software after any amendment constitutes your acceptance of the
-amended Terms.
+Changes to these Terms apply to future official releases or future use of
+official project services. They do not retroactively change the MIT License
+rights granted for previously received source code.
 
 ## 18. Contact
 

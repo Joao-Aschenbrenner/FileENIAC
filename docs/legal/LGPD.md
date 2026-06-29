@@ -3,7 +3,7 @@
 
 ** Lei Geral de Proteção de Dados (Brazilian General Data Protection Law) **
 
-**Document version**: 1.0
+**Document version**: 1.1
 **Last updated**: 2026-06-28
 
 ## Applicability
@@ -85,7 +85,7 @@ Data is **never** used for:
 
 FileENIAC collects only what is strictly necessary:
 
-- GitHub credentials: required for GitHub OAuth authentication
+- GitHub credentials: required for GitHub API operations
 - FTPS credentials: required for deployment operations
 - Workspace paths: required for workspace management
 - Project names: required for project identification
@@ -99,8 +99,8 @@ FileENIAC implements the following security measures:
 ### Technical Safeguards
 
 - **Encryption at rest**: Credentials in the Vault are encrypted with
-  AES-256-GCM using a key derived from `FILEENIAC_VAULT_PASSWORD`
-  via Argon2id
+  AES-256-GCM using a unique 256-bit key generated when a workspace is
+  created
 - **Path canonicalization**: Prevents path traversal attacks in workspace
   operations
 - **Input validation**: Regex allowlists on names and paths
@@ -114,9 +114,10 @@ FileENIAC implements the following security measures:
 - Secrets obtained only from environment variables
 - Bearer tokens are ephemeral (32 bytes, generated per session)
 
-**Note on Vault Encryption**: If `FILEENIAC_VAULT_PASSWORD` is not set,
-the Vault does not apply encryption. Set this environment variable for
-production use.
+**Note on Vault Encryption**: A unique 256-bit encryption key is generated
+automatically when each workspace is created and stored in the workspace
+configuration file. This key is local to your installation. All credentials
+are always encrypted at rest — there is no unencrypted fallback mode.
 
 ## Retention Period (Art. 7, II — LGPD)
 
@@ -146,9 +147,12 @@ You can access all your data by examining:
 ### Right of Correction (Art. 18, IV)
 
 You can correct data by:
-- Editing SQLite directly with any SQLite client
-- Re-configuring credentials in the application
+- Re-configuring credentials in the application settings
+- Updating workspace configuration in the application
 - Deleting and re-creating workspaces
+
+Direct manual editing of the database is not recommended and may corrupt
+your workspace.
 
 ### Right of Deletion (Art. 18, VI)
 
@@ -159,8 +163,9 @@ rm -rf "$FILEENIAC_DATA_DIR"  # default: ./data/
 
 This removes all workspace, credential, history, and log data.
 
-To delete specific records, use the application's delete functions or
-edit the SQLite database directly.
+To delete specific records, use the application's delete functions. Direct
+manual editing of the database is not recommended and may corrupt your
+workspace.
 
 ### Right of Portability (Art. 18, V)
 
