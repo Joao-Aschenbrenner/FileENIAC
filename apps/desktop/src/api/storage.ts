@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * Centralized storage keys and typed helpers.
  * All localStorage keys are defined here as single source of truth.

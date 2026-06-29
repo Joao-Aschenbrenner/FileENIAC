@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getProject, listServers, getDeploys, executeDeploy, executeRollback, executeVerify, getDiff } from "../api/client";

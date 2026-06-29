@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { InputHTMLAttributes, forwardRef } from "react";
 
 export type InputSizeVariant = "sm" | "md" | "lg";

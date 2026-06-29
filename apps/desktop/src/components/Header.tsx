@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { useEffect, useState } from "react";
 import { checkHealth } from "../api/client";
 

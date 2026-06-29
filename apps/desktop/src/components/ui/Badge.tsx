@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 interface BadgeProps {
   variant?: "success" | "warning" | "danger" | "info" | "neutral";
   children: React.ReactNode;

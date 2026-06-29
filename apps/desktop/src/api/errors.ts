@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 export class ApiError extends Error {
   constructor(public status: number, public url: string, message: string) {
     super(message);

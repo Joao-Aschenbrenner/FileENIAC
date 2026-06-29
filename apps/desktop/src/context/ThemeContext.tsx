@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * ThemeProvider — manages light/dark/system theme with CSS variable support.
  *

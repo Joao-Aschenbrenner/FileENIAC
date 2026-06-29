@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { InputHTMLAttributes, forwardRef } from "react";
 
 interface CheckboxProps extends Omit<InputHTMLAttributes<HTMLInputElement>, "type"> {

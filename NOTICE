@@ -1,0 +1,51 @@
+# SPDX-License-Identifier: MIT
+# NOTICE
+
+Copyright (c) 2024-2026 Joao Aschenbrenner / ENIAC Systems
+
+FileENIAC — Local-first workspace management platform.
+
+This software is made available under the MIT License.
+
+## Project Information
+
+- **Name**: FileENIAC
+- **Version**: 0.1.0
+- **Description**: Local-first workspace management platform combining Git repository management, GitHub integration, and FTPS deployment orchestration through a unified dashboard.
+- **Author**: Joao Aschenbrenner / ENIAC Systems
+- **License**: MIT
+
+## Core Functionality
+
+- Local workspace lifecycle management with discovery and registry
+- Git repository operations (clone, pull, push, diff)
+- GitHub OAuth integration and repository discovery
+- FTPS deployment orchestration with rollback and verification
+- Bidirectional mirror synchronization
+- Deploy history and audit logging
+- Background health monitoring
+
+## Third-Party Components
+
+This software uses open-source components as listed in THIRD_PARTY_LICENSES.md.
+
+## Desktop Application
+
+FileENIAC Desktop Application is built with:
+- **Tauri v2** (MIT License) — Application framework
+- **React 18** (MIT License) — UI library
+- **TypeScript** (Apache-2.0 / BSD-2-Clause) — Language
+- **Vite** (MIT License) — Build tool
+- **TailwindCSS** (MIT License) — CSS framework
+- **WebView2** (included in Windows 10/11) — Web runtime
+
+For full third-party license details, see THIRD_PARTY_LICENSES.md.
+
+## Data Storage
+
+All data is stored locally on the user's device. No data is transmitted to
+the developer or any third-party servers except as strictly necessary for
+GitHub OAuth authentication (tokens managed by GitHub) and FTPS operations
+(data transfer between the user's device and their configured FTPS servers).
+
+See DATA_PROCESSING.md and PRIVACY_POLICY.md for details.

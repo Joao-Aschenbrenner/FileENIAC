@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { render, screen } from '@testing-library/react';
 import { Timeline } from '../Timeline';
 import { describe, it, expect } from 'vitest';

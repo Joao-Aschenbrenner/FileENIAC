@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 interface CardProps {
   title?: string;
   subtitle?: string;

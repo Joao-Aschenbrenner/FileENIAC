@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { invoke } from "@tauri-apps/api/core";
 
 let BASE_URL = "http://localhost:8080/api";

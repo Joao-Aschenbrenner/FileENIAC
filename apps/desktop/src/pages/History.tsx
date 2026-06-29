@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { useEffect, useState, useCallback } from "react";
 import { getHistory, getEvents } from "../api/client";
 import { Timeline } from "../components/ui/Timeline";

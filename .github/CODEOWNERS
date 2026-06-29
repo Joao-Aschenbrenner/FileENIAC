@@ -1,0 +1,20 @@
+# Code Owners
+# SPDX-License-Identifier: MIT
+
+# Default owner for all files
+* @Joao-Aschenbrenner
+
+# Backend code
+/backend/ @Joao-Aschenbrenner
+
+# Desktop app
+/apps/desktop/ @Joao-Aschenbrenner
+
+# Legal and docs
+/docs/legal/ @Joao-Aschenbrenner
+LICENSE @Joao-Aschenbrenner
+NOTICE @Joao-Aschenbrenner
+THIRD_PARTY_LICENSES.md @Joao-Aschenbrenner
+
+# CI/CD
+/.github/workflows/ @Joao-Aschenbrenner

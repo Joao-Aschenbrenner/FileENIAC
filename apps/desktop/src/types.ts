@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 export interface Workspace {
   name: string;
   description: string;

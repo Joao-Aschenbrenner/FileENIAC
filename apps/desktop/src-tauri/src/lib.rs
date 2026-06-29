@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 use std::env;
 
 #[tauri::command]

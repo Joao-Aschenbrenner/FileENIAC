@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 export function Loader({ text = "Carregando..." }: { text?: string }) {
   return (
     <div className="flex flex-col items-center justify-center py-12">

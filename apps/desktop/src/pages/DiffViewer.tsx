@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { useEffect, useState } from "react";
 import { listProjects, getDiff } from "../api/client";
 import { Card } from "../components/ui/Card";

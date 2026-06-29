@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 interface Column {
   key: string;
   header: string;

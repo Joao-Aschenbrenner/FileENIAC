@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { Component, ErrorInfo, ReactNode } from 'react';
 
 interface Props { children: ReactNode; }

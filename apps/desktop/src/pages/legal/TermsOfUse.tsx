@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { Button } from "../../components/ui/Button";
 import { CheckCircle } from "lucide-react";
 

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * Isolated token storage and resolution.
  *

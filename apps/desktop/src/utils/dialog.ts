@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { open } from "@tauri-apps/plugin-dialog";
 
 export async function pickFolder(title = "Selecionar pasta"): Promise<string | null> {

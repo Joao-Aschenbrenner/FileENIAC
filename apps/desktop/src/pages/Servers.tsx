@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { useEffect, useState } from "react";
 import { listServers, deleteServer, createServer, listProjects } from "../api/client";
 import { Loader } from "../components/ui/Loader";

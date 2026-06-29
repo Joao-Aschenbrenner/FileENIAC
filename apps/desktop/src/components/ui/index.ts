@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 export { Card } from "./Card";
 export { Badge } from "./Badge";
 export { Modal } from "./Modal";

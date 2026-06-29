@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * AuthProvider — centralises all authentication state.
  *

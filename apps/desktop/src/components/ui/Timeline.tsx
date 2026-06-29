@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { Badge } from "./Badge";
 
 interface TimelineItem {

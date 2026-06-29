@@ -1,0 +1,90 @@
+name: Security Report
+description: Report a security vulnerability (private disclosure)
+title: "[Security] "
+labels: ["security"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Security Vulnerability Report
+
+        **Thank you for reporting a security vulnerability.**
+
+        Please do NOT open a public issue for security vulnerabilities.
+        Use this form to report privately. The information will be shared
+        only with the maintainer.
+
+        If you prefer, you can also use GitHub Security Advisories:
+        https://github.com/Joao-Aschenbrenner/FileENIAC/security/advisories/new
+
+  - type: textarea
+    id: vulnerability
+    attributes:
+      label: Vulnerability Description
+      description: Describe the vulnerability in detail
+      placeholder: Describe the vulnerability
+    validations:
+      required: true
+
+  - type: input
+    id: severity
+    attributes:
+      label: Severity (optional)
+      description: |
+        If known:
+        - Critical: Remote code execution, unauthenticated data access
+        - High: Significant security impact with clear attack path
+        - Medium: Requires specific conditions to exploit
+        - Low: Minimal impact, theoretical
+      placeholder: e.g., High
+    validations:
+      required: false
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: Detailed steps to reproduce the vulnerability
+      placeholder: |
+        1. Step one
+        2. Step two
+        3. See vulnerability
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Potential Impact
+      description: What is the potential impact of this vulnerability?
+      placeholder: Describe the impact
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Affected Version(s)
+      description: Which versions of FileENIAC are affected?
+      placeholder: e.g., v0.1.0
+    validations:
+      required: true
+
+  - type: textarea
+    id: fix
+    attributes:
+      label: Suggested Fix (optional)
+      description: If you have a suggested fix, describe it here
+      placeholder: Suggested fix
+    validations:
+      required: false
+
+  - type: input
+    id: contact
+    attributes:
+      label: Contact (optional)
+      description: How can we follow up with you? (email or GitHub username)
+      placeholder: Your contact info
+    validations:
+      required: false

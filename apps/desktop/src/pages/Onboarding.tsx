@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getWorkspace, checkHealth } from "../api/client";

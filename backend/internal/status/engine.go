@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 package status
 
 type ImportState string

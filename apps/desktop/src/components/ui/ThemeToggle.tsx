@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { useTheme } from "../../context/ThemeContext";
 import { Sun, Moon, Monitor } from "lucide-react";
 

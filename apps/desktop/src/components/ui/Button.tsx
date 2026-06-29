@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { ButtonHTMLAttributes, forwardRef } from "react";
 
 export type ButtonVariant = "primary" | "secondary" | "ghost" | "danger" | "outline";

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * SessionContext — manages active session, workspace path, and session list.
  *

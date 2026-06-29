@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { render, screen } from '@testing-library/react';
 import { Toast } from '../Toast';
 import { describe, it, expect, vi, afterEach } from 'vitest';

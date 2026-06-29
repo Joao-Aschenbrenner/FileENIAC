@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { Routes, Route } from "react-router-dom";
 import ErrorBoundary from "./components/ErrorBoundary";
 import Layout from "./components/Layout";

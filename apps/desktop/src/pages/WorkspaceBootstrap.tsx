@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getGitHubStatus, getGitHubOrganizations, listRepositories, listProjects } from "../api/client";

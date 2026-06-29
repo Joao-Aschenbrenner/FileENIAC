@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 interface ErrorStateProps {
   message: string;
   onRetry?: () => void;

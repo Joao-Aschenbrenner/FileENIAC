@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { render, screen, cleanup } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, describe, it, expect, vi } from 'vitest';

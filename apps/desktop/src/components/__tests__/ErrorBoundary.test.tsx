@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { render, screen, cleanup, fireEvent } from '@testing-library/react';
 import { afterEach, describe, it, expect, vi } from 'vitest';
 import ErrorBoundary from '../ErrorBoundary';

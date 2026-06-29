@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 package health_test
 
 import (

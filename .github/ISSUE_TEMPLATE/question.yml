@@ -1,0 +1,57 @@
+name: Question
+description: Ask a question or request help
+title: "[Question] "
+labels: ["question"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Question
+
+        Have a question about FileENIAC? We'll try to help.
+
+        For bugs or feature requests, please use the respective templates instead.
+
+  - type: textarea
+    id: question
+    attributes:
+      label: Your Question
+      description: Clearly state your question
+      placeholder: Your question here
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: |
+        Provide context that helps answer the question:
+        - What are you trying to achieve?
+        - What have you tried so far?
+        - What error messages (if any) are you seeing?
+      placeholder: Context
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: FileENIAC Version (optional)
+      description: Run `fileeniac --version` if known
+      placeholder: e.g., v0.1.0
+    validations:
+      required: false
+
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform (optional)
+      options:
+        - Windows
+        - Linux
+        - macOS
+        - Docker
+    validations:
+      required: false
