@@ -8,6 +8,8 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strconv"
+	"time"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -31,6 +33,20 @@ func Open(path string) (*DB, error) {
 	if err := conn.Ping(); err != nil {
 		return nil, fmt.Errorf("failed to ping database: %w", err)
 	}
+
+	maxOpen := 25
+	if v := os.Getenv("FILEENIAC_DB_MAX_OPEN_CONNS"); v != "" {
+		if n, err := strconv.Atoi(v); err == nil && n > 0 {
+			maxOpen = n
+		}
+	}
+	maxIdle := maxOpen / 2
+	if maxIdle < 2 {
+		maxIdle = 2
+	}
+	conn.SetMaxOpenConns(maxOpen)
+	conn.SetMaxIdleConns(maxIdle)
+	conn.SetConnMaxLifetime(5 * time.Minute)
 
 	return &DB{conn: conn, path: path}, nil
 }

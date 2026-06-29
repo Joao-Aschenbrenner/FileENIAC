@@ -94,7 +94,7 @@ func (s *Server) routes() {
 }
 
 func (s *Server) ListenAndServe() error {
-	srv := &http.Server{Addr: s.addr, Handler: s.corsMiddleware(s.mux)}
+	srv := &http.Server{Addr: s.addr, Handler: s.rateLimitMiddleware(s.corsMiddleware(s.mux))}
 	s.mu.Lock()
 	s.srv = srv
 	s.mu.Unlock()
@@ -108,7 +108,7 @@ func (s *Server) ListenDynamic() (string, error) {
 	}
 	actualAddr := listener.Addr().String()
 	log.L().Info("api server listening (dynamic)", zap.String("addr", actualAddr))
-	srv := &http.Server{Handler: s.corsMiddleware(s.mux)}
+	srv := &http.Server{Handler: s.rateLimitMiddleware(s.corsMiddleware(s.mux))}
 	s.mu.Lock()
 	s.srv = srv
 	s.mu.Unlock()
@@ -1210,4 +1210,59 @@ func (s *Server) handleBackgroundHealth() http.HandlerFunc {
 		}
 		respond(w, http.StatusOK, snap)
 	}
+}
+
+// rateLimiter is a simple in-memory token-bucket rate limiter keyed by client IP.
+type rateLimiter struct {
+	mu      sync.Mutex
+	buckets map[string]*rateBucket
+	limit   int
+	window  time.Duration
+}
+
+type rateBucket struct {
+	tokens    int
+	lastReset time.Time
+}
+
+func newRateLimiter(limit int, window time.Duration) *rateLimiter {
+	return &rateLimiter{
+		buckets: make(map[string]*rateBucket),
+		limit:   limit,
+		window:  window,
+	}
+}
+
+func (rl *rateLimiter) allow(ip string) bool {
+	rl.mu.Lock()
+	defer rl.mu.Unlock()
+
+	now := time.Now()
+	b, ok := rl.buckets[ip]
+	if !ok || now.Sub(b.lastReset) >= rl.window {
+		b = &rateBucket{tokens: rl.limit - 1, lastReset: now}
+		rl.buckets[ip] = b
+		return true
+	}
+	if b.tokens <= 0 {
+		return false
+	}
+	b.tokens--
+	return true
+}
+
+func (s *Server) rateLimitMiddleware(next http.Handler) http.Handler {
+	rl := newRateLimiter(120, time.Minute)
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ip, _, err := net.SplitHostPort(r.RemoteAddr)
+		if err != nil {
+			ip = r.RemoteAddr
+		}
+		if !rl.allow(ip) {
+			w.Header().Set("Retry-After", "60")
+			respondError(w, http.StatusTooManyRequests, "rate limit exceeded")
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
 }
