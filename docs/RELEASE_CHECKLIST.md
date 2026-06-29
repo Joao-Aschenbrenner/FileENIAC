@@ -1,7 +1,7 @@
 # Release Checklist — FileENIAC v0.1.2
 
 **Release Date**: 2026-06-29
-**Status**: 🔄 IN PROGRESS
+**Status**: ✅ COMPLETE
 
 ---
 
@@ -24,8 +24,8 @@
 
 | Artifact | Location | Size | SHA256 |
 |----------|----------|------|--------|
-| Windows Installer (NSIS) | `apps/desktop/src-tauri/target/release/bundle/nsis/FileENIAC_0.1.2_x64-setup.exe` | TBD | TBD |
-| Source tarball | GitHub release source archive | — | TBD |
+| Windows Installer (NSIS) | `apps/desktop/src-tauri/target/release/bundle/nsis/FileENIAC_0.1.2_x64-setup.exe` | ~4 MB | CE5316AC3EC5FD1AB842E986BC3F8CEC7B548889954711F16C3CF9A368BBAE2F |
+| Source tarball | GitHub release source archive | — | AB6154E37B4670296619E423C5CAC15F69A067AB9961C15DFBB5FF4AB0930776 |
 
 ---
 
