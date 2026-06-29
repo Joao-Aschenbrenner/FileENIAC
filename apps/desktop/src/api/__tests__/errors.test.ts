@@ -2,6 +2,11 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { listSessions } from "../client";
 import { ApiError } from "../errors";
+import { clearTokenStorageState } from "../../auth/tokenStorage";
+
+vi.mock("@tauri-apps/api/core", () => ({
+  invoke: vi.fn().mockResolvedValue(undefined),
+}));
 
 const mockFetch = vi.fn();
 vi.stubGlobal("fetch", mockFetch);
@@ -9,6 +14,7 @@ vi.stubGlobal("fetch", mockFetch);
 beforeEach(() => {
   mockFetch.mockReset();
   localStorage.clear();
+  clearTokenStorageState();
   localStorage.setItem("eniac_api_token", "unit-test-token");
 });
 

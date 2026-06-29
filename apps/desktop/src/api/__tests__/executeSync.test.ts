@@ -1,6 +1,11 @@
 // SPDX-License-Identifier: MIT
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { executeSync, executeSyncSafe, executeSyncWithDelete } from '../client';
+import { clearTokenStorageState } from '../../auth/tokenStorage';
+
+vi.mock("@tauri-apps/api/core", () => ({
+  invoke: vi.fn().mockResolvedValue(undefined),
+}));
 
 const mockFetch = vi.fn();
 vi.stubGlobal('fetch', mockFetch);
@@ -19,6 +24,7 @@ beforeEach(() => {
     json: async () => ({ manifest: { result: 'ok' } }),
   });
   localStorage.clear();
+  clearTokenStorageState();
   localStorage.setItem('eniac_api_token', 'unit-test-token');
   localStorage.setItem('eniac_ws_path', '/ws');
 });

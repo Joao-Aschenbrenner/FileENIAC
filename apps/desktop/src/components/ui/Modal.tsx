@@ -6,9 +6,16 @@ interface ModalProps {
   onClose: () => void;
   title: string;
   children: React.ReactNode;
+  size?: "sm" | "md" | "lg";
 }
 
-export function Modal({ open, onClose, title, children }: ModalProps) {
+const sizeClasses: Record<string, string> = {
+  sm: "max-w-sm",
+  md: "max-w-lg",
+  lg: "max-w-2xl",
+};
+
+export function Modal({ open, onClose, title, children, size = "md" }: ModalProps) {
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
 
@@ -25,7 +32,7 @@ export function Modal({ open, onClose, title, children }: ModalProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
-      <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
+      <div className={`relative bg-white rounded-xl shadow-2xl w-full ${sizeClasses[size]} mx-4 max-h-[90vh] overflow-y-auto`}>
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
           <h3 className="font-semibold text-gray-800">{title}</h3>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors text-lg leading-none">&times;</button>

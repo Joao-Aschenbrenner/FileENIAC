@@ -1,4 +1,13 @@
 // SPDX-License-Identifier: MIT
+export interface Session {
+  id: number;
+  name: string;
+  description: string;
+  workspace_path: string;
+  is_active: boolean;
+  github_user?: string;
+}
+
 export interface Workspace {
   name: string;
   description: string;

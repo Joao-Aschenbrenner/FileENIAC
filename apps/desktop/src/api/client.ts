@@ -1,7 +1,20 @@
 // SPDX-License-Identifier: MIT
 import { invoke } from "@tauri-apps/api/core";
+import { resolveApiToken } from "../auth/tokenStorage";
+import { ApiError } from "./errors";
+import { STORAGE_KEYS, storageGet } from "./storage";
 
 let BASE_URL = "http://localhost:8080/api";
+
+export const GET_TIMEOUT_MS = 10_000;
+export const MUTATION_TIMEOUT_MS = 30_000;
+
+export class TimeoutError extends Error {
+  constructor(public ms: number) {
+    super(`Request timed out after ${ms}ms`);
+    this.name = "TimeoutError";
+  }
+}
 
 export async function initApiClient(): Promise<void> {
   try {
@@ -13,34 +26,94 @@ export async function initApiClient(): Promise<void> {
 }
 
 async function get(path: string): Promise<any> {
-  const res = await fetch(`${BASE_URL}${path}`);
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new Error(body.error || `HTTP ${res.status}`);
+  const token = await resolveApiToken();
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), GET_TIMEOUT_MS);
+  try {
+    const res = await fetch(`${BASE_URL}${path}`, {
+      signal: controller.signal,
+      headers: {
+        "Accept": "application/json",
+        "User-Agent": "FileENIAC/1.0.0",
+        "X-Workspace": storageGet(STORAGE_KEYS.workspacePath) || "",
+        ...(token ? { "Authorization": `Bearer ${token}` } : {}),
+      },
+    });
+    clearTimeout(timer);
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      throw new ApiError(res.status, `${BASE_URL}${path}`, body.error || `HTTP ${res.status}`);
+    }
+    return res.json();
+  } catch (err) {
+    clearTimeout(timer);
+    if (err instanceof DOMException && err.name === "AbortError") {
+      throw new TimeoutError(GET_TIMEOUT_MS);
+    }
+    throw err;
   }
-  return res.json();
 }
 
 async function post(path: string, body: any): Promise<any> {
-  const res = await fetch(`${BASE_URL}${path}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-  if (!res.ok) {
-    const errBody = await res.json().catch(() => ({}));
-    throw new Error(errBody.error || `HTTP ${res.status}`);
+  const token = await resolveApiToken();
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), MUTATION_TIMEOUT_MS);
+  try {
+    const res = await fetch(`${BASE_URL}${path}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "User-Agent": "FileENIAC/1.0.0",
+        "X-Workspace": storageGet(STORAGE_KEYS.workspacePath) || "",
+        ...(token ? { "Authorization": `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify(body),
+      signal: controller.signal,
+    });
+    clearTimeout(timer);
+    if (!res.ok) {
+      const errBody = await res.json().catch(() => ({}));
+      throw new ApiError(res.status, `${BASE_URL}${path}`, errBody.error || `HTTP ${res.status}`);
+    }
+    return res.json();
+  } catch (err) {
+    clearTimeout(timer);
+    if (err instanceof DOMException && err.name === "AbortError") {
+      throw new TimeoutError(MUTATION_TIMEOUT_MS);
+    }
+    throw err;
   }
-  return res.json();
 }
 
 async function del(path: string): Promise<any> {
-  const res = await fetch(`${BASE_URL}${path}`, { method: "DELETE" });
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new Error(body.error || `HTTP ${res.status}`);
+  const token = await resolveApiToken();
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), MUTATION_TIMEOUT_MS);
+  try {
+    const res = await fetch(`${BASE_URL}${path}`, {
+      method: "DELETE",
+      headers: {
+        "Accept": "application/json",
+        "User-Agent": "FileENIAC/1.0.0",
+        "X-Workspace": storageGet(STORAGE_KEYS.workspacePath) || "",
+        ...(token ? { "Authorization": `Bearer ${token}` } : {}),
+      },
+      signal: controller.signal,
+    });
+    clearTimeout(timer);
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      throw new ApiError(res.status, `${BASE_URL}${path}`, body.error || `HTTP ${res.status}`);
+    }
+    return res.json();
+  } catch (err) {
+    clearTimeout(timer);
+    if (err instanceof DOMException && err.name === "AbortError") {
+      throw new TimeoutError(MUTATION_TIMEOUT_MS);
+    }
+    throw err;
   }
-  return res.json();
 }
 
 function ws(path: string, extraParams?: string): string {
@@ -160,8 +233,22 @@ export async function getSyncs(project?: string, limit?: number): Promise<any[]>
   return get(ws("/syncs", qs.toString()));
 }
 
-export async function executeSync(project: string, action: string): Promise<any> {
-  return post(ws("/sync"), { project, action });
+export async function executeSync(project: string, action: string, confirm?: boolean | { confirm?: boolean; confirmDeleting?: boolean }): Promise<any> {
+  let confirmValue = false;
+  if (typeof confirm === "boolean") {
+    confirmValue = confirm;
+  } else if (confirm && typeof confirm === "object") {
+    confirmValue = confirm.confirm ?? (confirm.confirmDeleting ?? false);
+  }
+  return post(ws("/sync"), { project, action, confirm: confirmValue });
+}
+
+export async function executeSyncSafe(project: string, action: string): Promise<any> {
+  return executeSync(project, action, false);
+}
+
+export async function executeSyncWithDelete(project: string, action: string): Promise<any> {
+  return executeSync(project, action, true);
 }
 
 export async function createMirror(project: string): Promise<any> {
@@ -170,6 +257,30 @@ export async function createMirror(project: string): Promise<any> {
 
 export async function getHealthCheck(): Promise<any> {
   return get(ws("/health/check"));
+}
+
+export async function listSessions(): Promise<any[]> {
+  return get(ws("/sessions"));
+}
+
+export async function activateSession(id: number): Promise<any> {
+  return post(ws(`/sessions/${id}/activate`), {});
+}
+
+export async function clearSessionWorkspace(id: number): Promise<any> {
+  return post(ws(`/sessions/${id}/clear-workspace`), {});
+}
+
+export async function deleteSession(id: number): Promise<any> {
+  return del(ws(`/sessions/${id}`));
+}
+
+export async function createSession(data: { name: string; description: string }): Promise<any> {
+  return post(ws("/sessions"), data);
+}
+
+export async function updateSession(id: number, data: Record<string, any>): Promise<any> {
+  return post(ws(`/sessions/${id}`), data);
 }
 
 // GitHub endpoints
