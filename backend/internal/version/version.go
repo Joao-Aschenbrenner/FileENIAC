@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
 package version
 
-const Version = "0.2.0"
-const BuildDate = "2026-06-13"
+const Version = "0.1.3"
+const BuildDate = "2026-06-29"

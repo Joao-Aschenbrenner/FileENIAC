@@ -25,6 +25,7 @@ var ServeCmd = &cobra.Command{
 		addr, _ := cmd.Flags().GetString("addr")
 
 		srv := api.New(addr)
+		srv.ServeFrontend()
 
 		// Start background health runner
 		ctx := workspace.Active()

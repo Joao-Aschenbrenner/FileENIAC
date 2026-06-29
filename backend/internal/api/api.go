@@ -3,6 +3,8 @@ package api
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"net"
@@ -10,6 +12,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -40,15 +43,31 @@ type Server struct {
 	mu         sync.RWMutex
 	srv        *http.Server
 	background *bghealth.BackgroundRunner
+	token      string
 }
 
 func New(addr string) *Server {
+	token := generateToken()
 	s := &Server{
-		addr: addr,
-		mux:  http.NewServeMux(),
+		addr:  addr,
+		mux:   http.NewServeMux(),
+		token: token,
 	}
 	s.routes()
 	return s
+}
+
+func generateToken() string {
+	b := make([]byte, 32)
+	if _, err := rand.Read(b); err != nil {
+		// fallback: use a hardcoded random-ish seed (last resort)
+		return "fallback-token-not-secure"
+	}
+	return hex.EncodeToString(b)
+}
+
+func (s *Server) Token() string {
+	return s.token
 }
 
 func (s *Server) SetBackgroundRunner(bg *bghealth.BackgroundRunner) {
@@ -57,6 +76,7 @@ func (s *Server) SetBackgroundRunner(bg *bghealth.BackgroundRunner) {
 
 func (s *Server) routes() {
 	s.mux.HandleFunc("/api/health", s.handleHealth())
+	s.mux.HandleFunc("/api/_handshake/token", s.handleHandshakeToken())
 	s.mux.HandleFunc("/api/workspace", s.requireWorkspace(s.handleWorkspace()))
 	s.mux.HandleFunc("/api/projects", s.requireWorkspace(s.handleProjects()))
 	s.mux.HandleFunc("/api/projects/", s.requireWorkspace(s.handleProjectByID()))
@@ -94,7 +114,7 @@ func (s *Server) routes() {
 }
 
 func (s *Server) ListenAndServe() error {
-	srv := &http.Server{Addr: s.addr, Handler: s.rateLimitMiddleware(s.corsMiddleware(s.mux))}
+	srv := &http.Server{Addr: s.addr, Handler: s.authMiddleware(s.rateLimitMiddleware(s.corsMiddleware(s.mux)))}
 	s.mu.Lock()
 	s.srv = srv
 	s.mu.Unlock()
@@ -108,7 +128,7 @@ func (s *Server) ListenDynamic() (string, error) {
 	}
 	actualAddr := listener.Addr().String()
 	log.L().Info("api server listening (dynamic)", zap.String("addr", actualAddr))
-	srv := &http.Server{Handler: s.rateLimitMiddleware(s.corsMiddleware(s.mux))}
+	srv := &http.Server{Handler: s.authMiddleware(s.rateLimitMiddleware(s.corsMiddleware(s.mux)))}
 	s.mu.Lock()
 	s.srv = srv
 	s.mu.Unlock()
@@ -130,7 +150,7 @@ func (s *Server) handleHeartbeat() http.HandlerFunc {
 
 func (s *Server) corsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Origin", "http://localhost")
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 		if r.Method == http.MethodOptions {
@@ -179,6 +199,37 @@ func (s *Server) handleHealth() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		respond(w, http.StatusOK, map[string]string{"status": "ok"})
 	}
+}
+
+func (s *Server) handleHandshakeToken() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			respondError(w, http.StatusMethodNotAllowed, "use GET")
+			return
+		}
+		respond(w, http.StatusOK, map[string]string{"token": s.token})
+	}
+}
+
+func (s *Server) authMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		path := r.URL.Path
+		if path == "/api/health" || path == "/api/_handshake/token" {
+			next.ServeHTTP(w, r)
+			return
+		}
+		auth := r.Header.Get("Authorization")
+		if auth == "" || !strings.HasPrefix(auth, "Bearer ") {
+			respondError(w, http.StatusUnauthorized, "missing or invalid authorization header")
+			return
+		}
+		token := strings.TrimPrefix(auth, "Bearer ")
+		if token != s.token {
+			respondError(w, http.StatusUnauthorized, "invalid token")
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
 }
 
 func (s *Server) requireWorkspace(next http.HandlerFunc) http.HandlerFunc {

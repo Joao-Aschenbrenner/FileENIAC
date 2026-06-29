@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"os/signal"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -91,7 +92,10 @@ Nao abre o navegador - usa uma janela de aplicativo real.`,
 		time.AfterFunc(800*time.Millisecond, func() {
 			log.L().Info("abrindo aplicativo desktop nativo", zap.String("path", tauriPath))
 			c := exec.Command(tauriPath)
-			c.Env = append(os.Environ(), fmt.Sprintf("FILEENIAC_API_PORT=%s", portStr))
+			c.Env = append(os.Environ(),
+				fmt.Sprintf("FILEENIAC_API_PORT=%s", portStr),
+				fmt.Sprintf("ENIAC_API_TOKEN=%s", srv.Token()),
+			)
 			if err := c.Start(); err != nil {
 				log.L().Sugar().Errorf("Falha ao abrir aplicativo desktop: %v", err)
 			} else {
@@ -108,7 +112,11 @@ Nao abre o navegador - usa uma janela de aplicativo real.`,
 		log.L().Sugar().Infof("FileENIAC rodando na porta %d (janela nativa)", portInt)
 		fmt.Printf("\n  FileENIAC rodando na porta: \x1b[36m%d\x1b[0m\n\n", portInt)
 
-		select {}
+		sig := make(chan os.Signal, 1)
+		signal.Notify(sig, os.Interrupt)
+		<-sig
+		log.L().Info("shutting down")
+		srv.Close()
 	},
 }
 

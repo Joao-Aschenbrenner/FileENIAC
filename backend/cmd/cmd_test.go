@@ -274,7 +274,7 @@ func TestServerCmd_HasSubcommands(t *testing.T) {
 }
 
 func TestAuthCmd_HasSubcommands(t *testing.T) {
-	for _, sc := range []string{"set", "get", "remove"} {
+	for _, sc := range []string{"login", "status", "logout"} {
 		_, _, err := rootCmd.Find([]string{"auth", sc})
 		if err != nil {
 			t.Errorf("expected 'auth %s' subcommand", sc)

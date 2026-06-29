@@ -57,19 +57,3 @@ func Execute() {
 		os.Exit(1)
 	}
 }
-
-func init() {
-	rootCmd.AddCommand(WorkspaceCmd)
-	rootCmd.AddCommand(ProjectCmd)
-	rootCmd.AddCommand(DeployCmd)
-	rootCmd.AddCommand(DiffCmd)
-	rootCmd.AddCommand(SyncCmd)
-	rootCmd.AddCommand(MirrorCmd)
-	rootCmd.AddCommand(ConfigCmd)
-	rootCmd.AddCommand(ServerCmd)
-	rootCmd.AddCommand(RepoCmd)
-	rootCmd.AddCommand(AuthCmd)
-	rootCmd.AddCommand(ServeCmd)
-	rootCmd.AddCommand(DesktopCmd)
-	rootCmd.AddCommand(NativeCmd)
-}
