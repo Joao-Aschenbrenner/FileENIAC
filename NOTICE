@@ -19,7 +19,7 @@ This software is made available under the MIT License.
 
 - Local workspace lifecycle management with discovery and registry
 - Git repository operations (clone, pull, push, diff)
-- GitHub OAuth integration and repository discovery
+- GitHub personal access token integration and repository discovery
 - FTPS deployment orchestration with rollback and verification
 - Bidirectional mirror synchronization
 - Deploy history and audit logging
@@ -45,7 +45,7 @@ For full third-party license details, see THIRD_PARTY_LICENSES.md.
 
 All data is stored locally on the user's device. No data is transmitted to
 the developer or any third-party servers except as strictly necessary for
-GitHub OAuth authentication (tokens managed by GitHub) and FTPS operations
+GitHub personal access token authentication (tokens are stored locally) and FTPS operations
 (data transfer between the user's device and their configured FTPS servers).
 
 See DATA_PROCESSING.md and PRIVACY_POLICY.md for details.

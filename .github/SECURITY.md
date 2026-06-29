@@ -36,11 +36,11 @@ For full vulnerability disclosure policy, see `docs/legal/VULNERABILITY_DISCLOSU
 
 ## Security Best Practices for Users
 
-1. Always set `FILEENIAC_VAULT_PASSWORD` — without it, credentials are stored unencrypted
+1. Protect access to your device and data directory
 2. Keep the application updated
 3. Use strong, unique FTPS passwords
-4. Protect access to your device and data directory
-5. Rotate credentials if you suspect compromise
+4. Rotate credentials if you suspect compromise
+5. Review logs before sharing them publicly
 
 ## Out of Scope
 

@@ -33,7 +33,7 @@ FileENIAC/
 | 0 | Arquitetura | ADRs, estrutura, schema |
 | 1 | Core | FTPS, Deploy, History |
 | 2 | Workspace | Registry, Mirror, Diff |
-| 3 | GitHub | OAuth, Discovery, Bootstrap |
+| 3 | GitHub | PAT integration, Discovery, Bootstrap |
 | 4 | Desktop | Dashboard, UI completa |
 | 5 | Agent | API, Observabilidade, IA |
 
