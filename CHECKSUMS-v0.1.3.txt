@@ -1,0 +1,5 @@
+# FileENIAC v0.1.3 — Checksums
+
+| File | SHA-256 |
+|------|---------|
+| FileENIAC_0.1.3_x64-setup.exe | 8CEC546608DEC4558131968EA8BE88B236D8C8173574DE3830CE21AD6CAFD4F2 |

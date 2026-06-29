@@ -10,7 +10,7 @@ This software is made available under the MIT License.
 ## Project Information
 
 - **Name**: FileENIAC
-- **Version**: 0.1.0
+- **Version**: 0.1.3
 - **Description**: Local-first workspace management platform combining Git repository management, GitHub integration, and FTPS deployment orchestration through a unified dashboard.
 - **Author**: Joao Aschenbrenner / ENIAC Systems
 - **License**: MIT
