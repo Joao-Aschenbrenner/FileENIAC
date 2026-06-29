@@ -29,10 +29,10 @@
     "active": true,
             "targets": ["nsis"],
     "icon": ["icons/icon.png", "icons/icon.ico"],
+    "licenseFile": "installer-license.txt",
     "windows": {
       "nsis": {
-        "installMode": "currentUser",
-        "license": "installer-license.txt"
+        "installMode": "currentUser"
       },
       "wix": {
         "language": "pt-BR"
