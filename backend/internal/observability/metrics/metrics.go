@@ -1,1 +1,29 @@
-// SPDX-License-Identifier: MITpackage metricstype Metrics interface {	Timer(name string) func()	Counter(name string, value int64)	Gauge(name string, value float64)}type noOpMetrics struct{}func (noOpMetrics) Timer(name string) func()         { return func() {} }func (noOpMetrics) Counter(name string, value int64) {}func (noOpMetrics) Gauge(name string, value float64) {}var global Metrics = noOpMetrics{}func Set(m Metrics) {	if m == nil {		global = noOpMetrics{}		return	}	global = m}func Get() Metrics {	return global}
+// SPDX-License-Identifier: MIT
+
+package metrics
+
+type Metrics interface {
+	Timer(name string) func()
+	Counter(name string, value int64)
+	Gauge(name string, value float64)
+}
+
+type noOpMetrics struct{}
+
+func (noOpMetrics) Timer(name string) func()         { return func() {} }
+func (noOpMetrics) Counter(name string, value int64) {}
+func (noOpMetrics) Gauge(name string, value float64) {}
+
+var global Metrics = noOpMetrics{}
+
+func Set(m Metrics) {
+	if m == nil {
+		global = noOpMetrics{}
+		return
+	}
+	global = m
+}
+
+func Get() Metrics {
+	return global
+}

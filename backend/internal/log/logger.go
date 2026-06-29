@@ -2,6 +2,9 @@
 package log
 
 import (
+	"context"
+	"crypto/rand"
+	"encoding/hex"
 	"os"
 
 	"go.uber.org/zap"
@@ -70,4 +73,35 @@ func SetOutput(path string) error {
 	)
 	defaultLogger = zap.New(core)
 	return nil
+}
+
+type contextKey string
+
+const correlationIDKey contextKey = "correlation_id"
+
+// NewID returns a short random identifier suitable for request correlation.
+func NewID() string {
+	b := make([]byte, 4)
+	if _, err := rand.Read(b); err != nil {
+		return "xxxxxxxx"
+	}
+	return hex.EncodeToString(b)
+}
+
+// WithCorrelationID returns a new context carrying the provided correlation ID.
+// If id is empty, a new ID is generated automatically.
+func WithCorrelationID(ctx context.Context, id string) context.Context {
+	if id == "" {
+		id = NewID()
+	}
+	return context.WithValue(ctx, correlationIDKey, id)
+}
+
+// WithContext returns a logger enriched with the correlation ID from ctx, if any.
+func WithContext(ctx context.Context) *zap.Logger {
+	logger := L()
+	if id, ok := ctx.Value(correlationIDKey).(string); ok && id != "" {
+		return logger.With(zap.String("correlation_id", id))
+	}
+	return logger
 }

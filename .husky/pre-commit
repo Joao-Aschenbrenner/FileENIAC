@@ -36,28 +36,38 @@ available() {
   command -v "$1" >/dev/null 2>&1
 }
 
-# --- 1) Backend: gofmt -l + go build ---
+# --- 1) Backend: gofmt -l + go vet + go build + go test ---
 run_backend() {
   if ! available go; then
     printf '[husky] go not found in PATH; skipping backend checks.\n'
     return 0
   fi
-  # Format check: fail if any .go file would be reformatted.
-  # Run on all backend go files (not just staged) since gofmt check is fast
-  # and avoids missing files referenced by the build.
   if [ -d backend ]; then
     cd "$REPO_ROOT/backend"
+
     out=$(gofmt -l . 2>&1 || true)
     if [ -n "$out" ]; then
       printf '%s\n' "$out" >&2
       printf '[husky] gofmt: above files need formatting. Run `gofmt -w backend/`.\n' >&2
       return 1
     fi
-    cd "$REPO_ROOT"
+
+    go vet ./... >/dev/null 2>&1 || {
+      printf '[husky] go vet ./... failed.\n' >&2
+      return 1
+    }
+
     go build ./... >/dev/null 2>&1 || {
       printf '[husky] go build ./... failed.\n' >&2
       return 1
     }
+
+    go test ./... >/dev/null 2>&1 || {
+      printf '[husky] go test ./... failed.\n' >&2
+      return 1
+    }
+
+    cd "$REPO_ROOT"
   fi
   return 0
 }
@@ -96,11 +106,21 @@ run_whitespace() {
     if [ "$(git diff --cached --numstat -- "$f" | awk '{print $1}')" = "-" ]; then
       continue
     fi
-    # Trailing whitespace (spaces or tab) at EOL.
-    if grep -nE ' +$' "$f" >/dev/null 2>&1 || grep -nP "\t" "$f" >/dev/null 2>&1; then
-      printf '[husky] whitespace issue in: %s\n' "$f" >&2
+    # Trailing whitespace at EOL.
+    if grep -nE ' +$' "$f" >/dev/null 2>&1; then
+      printf '[husky] trailing whitespace in: %s\n' "$f" >&2
       bad=1
     fi
+    # Tabs are illegal in non-Go files; Go uses tabs for indentation by convention.
+    case "$f" in
+      *.go) ;;
+      *)
+        if grep -nP "\t" "$f" >/dev/null 2>&1; then
+          printf '[husky] tab character in: %s\n' "$f" >&2
+          bad=1
+        fi
+        ;;
+    esac
   done
   return $bad
 }

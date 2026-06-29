@@ -155,10 +155,10 @@ func (ws *Workspace) Status() map[string]interface{} {
 		return nil
 	}
 
-	projectCount, _ := activeContext.DB.Count("projects", "1=1")
-	serverCount, _ := activeContext.DB.Count("servers", "1=1")
-	deployCount, _ := activeContext.DB.Count("deploy_logs", "1=1")
-	eventCount, _ := activeContext.DB.Count("events", "1=1")
+	projectCount, _ := activeContext.DB.Count("projects")
+	serverCount, _ := activeContext.DB.Count("servers")
+	deployCount, _ := activeContext.DB.Count("deploy_logs")
+	eventCount, _ := activeContext.DB.Count("events")
 
 	return map[string]interface{}{
 		"name":        ws.Name,

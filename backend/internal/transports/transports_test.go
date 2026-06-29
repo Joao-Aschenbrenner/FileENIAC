@@ -11,7 +11,7 @@ type mockTransport struct {
 }
 
 func (m *mockTransport) Connect(ctx context.Context) error { return nil }
-func (m *mockTransport) Disconnect() error                  { return nil }
+func (m *mockTransport) Disconnect() error                 { return nil }
 func (m *mockTransport) Upload(ctx context.Context, local, remote string) error {
 	return nil
 }

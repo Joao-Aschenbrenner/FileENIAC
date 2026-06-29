@@ -1,7 +1,7 @@
 # ENIACSYSTEMS/FileENIAC - Multi-stage build for Linux backend
 # https://github.com/ENIACSystems/FileENIAC
 # =============================================================================
-FROM golang:1.25-alpine AS builder
+FROM golang:1.26-alpine AS builder
 WORKDIR /app
 
 RUN apk add --no-cache musl-dev gcc sqlite-dev
@@ -19,9 +19,14 @@ RUN go build -trimpath -ldflags="-s -w" -o /build/fileeniac ./backend/
 FROM alpine:3.21 AS runtime
 WORKDIR /fileeniac
 
-RUN apk add --no-cache ca-certificates sqlite-libs libffi tzdata
+RUN apk add --no-cache ca-certificates sqlite-libs libffi tzdata && \
+    addgroup -g 1000 fileeniac && \
+    adduser -u 1000 -G fileeniac -s /bin/sh -D fileeniac
 
 COPY --from=builder /build/fileeniac /fileeniac/fileeniac
+RUN chown fileeniac:fileeniac /fileeniac/fileeniac && chmod 0755 /fileeniac/fileeniac
+
+USER fileeniac
 
 EXPOSE 8080
 

@@ -148,9 +148,24 @@ func (db *DB) QueryRow(query string, args ...interface{}) *sql.Row {
 	return db.conn.QueryRow(query, args...)
 }
 
-func (db *DB) Count(table string, where string) (int, error) {
+func (db *DB) Count(table string) (int, error) {
+	allowed := map[string]bool{
+		"projects":           true,
+		"servers":            true,
+		"events":             true,
+		"deploy_logs":        true,
+		"rollback_logs":      true,
+		"workspace_settings": true,
+		"mirror_snapshots":   true,
+		"sync_manifests":     true,
+		"repositories":       true,
+		"sessions":           true,
+	}
+	if !allowed[table] {
+		return 0, fmt.Errorf("table %q not allowed for count", table)
+	}
 	var count int
-	query := fmt.Sprintf("SELECT COUNT(*) FROM %s WHERE %s", table, where)
+	query := fmt.Sprintf("SELECT COUNT(*) FROM %s", table)
 	err := db.conn.QueryRow(query).Scan(&count)
 	return count, err
 }

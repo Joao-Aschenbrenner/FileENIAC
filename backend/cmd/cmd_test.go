@@ -309,5 +309,3 @@ func TestNonexistentFlag(t *testing.T) {
 		t.Fatal("expected error for nonexistent flag")
 	}
 }
-
-
