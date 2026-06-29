@@ -7,6 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-06-29
+
+### Security
+
+- [x] **SQL injection fixed:** removed dynamic `WHERE` clause from `database.Count`;
+      prepared statements are now used throughout the backend.
+- [x] **API rate limiting:** per-IP token bucket (120 req/min) applied to all routes.
+- [x] **Container hardening:** Docker images now run as non-root user `fileeniac`.
+
+### Build & Quality
+
+- [x] **Husky restored:** pre-commit now runs `gofmt`, `go vet`, `go build` and
+      `go test` from the `backend/` directory; Go tab indentation is allowed.
+- [x] **Docker updated:** builder/runtime images use Go 1.26.
+- [x] **npm audit clean:** upgraded `vite` to v8, `vitest` to v3, added
+      `lucide-react`; 0 known vulnerabilities.
+
+### Tests
+
+- [x] **Frontend tests green:** updated `ErrorBoundary`, `Sidebar`, `ThemeContext`
+      and added `Onboarding` tests; removed obsolete `LGPDConsent` and
+      `Sidebar.workspace-guard` tests.
+- [x] **Backend tests green:** all packages pass `go test ./...` and
+      `go test -race ./...`.
+
+### Documentation
+
+- [x] **Post-release audit:** added `docs/audits/FULL_CODE_AUDIT_v0.1.0.md`.
+- [x] **Fix plan:** added `docs/plans/FIX_PLAN_v0.1.0_AUDIT.md`.
+
 ### Bug Correction
 
 - [x] **needsDelete corrigido:** `mirror_to_local` + `StateNew` tratava arquivos novos

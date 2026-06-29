@@ -1,13 +1,30 @@
-# FileENIAC v0.1.0 — Release Notes
+# FileENIAC v0.1.2 — Release Notes
 
-**Release Date**: 2026-06-27
-**Type**: First Stable Release (General Availability)
+**Release Date**: 2026-06-29
+**Type**: Security & Stability Hotfix
+
+## Overview
+
+This release addresses critical findings from the post-v0.1.0 code audit. It
+fixes the SQL-injection vector in `database.Count`, restores the pre-commit
+gate, hardens the Docker image, resolves all `npm audit` findings and brings
+the frontend test suite back to green. This replaces the v0.1.1 release, which
+shipped with corrupted Go source files and failing frontend tests.
+
+## Highlights
+
+- SQL injection eliminated from `DB.Count`.
+- Per-IP API rate limiting (120 req/min).
+- Docker image runs as non-root user with Go 1.26.
+- All backend tests pass including `-race`.
+- All frontend tests pass; `npm audit` reports 0 vulnerabilities.
+- Comprehensive audit report and fix plan published in `docs/`.
 
 ---
 
 # FileENIAC v0.1.1 — Release Notes
 
-**Release Date**: 2026-06-28
+**Release Date**: 2026-06-28 (superseded by v0.1.2)
 **Type**: Open Source Governance + LGPD Compliance
 
 ---
