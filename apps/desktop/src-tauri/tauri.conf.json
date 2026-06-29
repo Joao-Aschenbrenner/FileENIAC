@@ -31,13 +31,14 @@
     "icon": ["icons/icon.png", "icons/icon.ico"],
     "windows": {
       "nsis": {
-        "installMode": "currentUser"
+        "installMode": "currentUser",
+        "license": "installer-license.txt"
       },
       "wix": {
         "language": "pt-BR"
       },
       "webviewInstallMode": {
-        "type": "skip"
+        "type": "embedBootstrapper"
       }
     }
   }
