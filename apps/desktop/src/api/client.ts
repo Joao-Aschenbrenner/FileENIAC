@@ -18,8 +18,10 @@ export class TimeoutError extends Error {
 
 export async function initApiClient(): Promise<void> {
   try {
-    const port = await invoke<string>("get_api_port");
-    BASE_URL = `http://localhost:${port}/api`;
+    const info = await invoke<{ base_url: string; token: string }>("get_backend_info");
+    if (info.base_url && info.base_url.trim()) {
+      BASE_URL = info.base_url.trim();
+    }
   } catch {
     BASE_URL = "http://localhost:8080/api";
   }

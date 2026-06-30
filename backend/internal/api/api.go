@@ -47,7 +47,10 @@ type Server struct {
 }
 
 func New(addr string) *Server {
-	token := generateToken()
+	token := os.Getenv("ENIAC_API_TOKEN")
+	if token == "" {
+		token = generateToken()
+	}
 	s := &Server{
 		addr:  addr,
 		mux:   http.NewServeMux(),
@@ -150,7 +153,12 @@ func (s *Server) handleHeartbeat() http.HandlerFunc {
 
 func (s *Server) corsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "http://localhost")
+		origin := r.Header.Get("Origin")
+		allowed := "http://localhost"
+		if strings.HasPrefix(origin, "http://127.0.0.1:") || strings.HasPrefix(origin, "http://localhost:") {
+			allowed = origin
+		}
+		w.Header().Set("Access-Control-Allow-Origin", allowed)
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 		if r.Method == http.MethodOptions {

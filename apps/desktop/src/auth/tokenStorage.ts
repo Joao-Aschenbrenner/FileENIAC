@@ -1,16 +1,4 @@
 // SPDX-License-Identifier: MIT
-/**
- * Isolated token storage and resolution.
- *
- * The auth token flows through 3 possible sources (in priority order):
- * 1. Tauri IPC command "get_api_token"  (set by the native shell on startup)
- * 2. Backend handshake endpoint         (unauthenticated, generates ephemeral token)
- * 3. localStorage (persisted bearer)    (from a previous successful handshake)
- *
- * All reads/writes go through this module so the rest of the app
- * never touches localStorage directly for auth concerns.
- */
-
 import { invoke } from "@tauri-apps/api/core";
 import { STORAGE_KEYS } from "../api/storage";
 
@@ -78,31 +66,28 @@ async function _doResolve(): Promise<string | null> {
   let token = getStoredToken();
   if (token) return token;
 
-  // Try Tauri IPC first.
   try {
-    const fromTauri: string = await invoke("get_api_token");
-    if (fromTauri && fromTauri.trim()) {
-      storeToken(fromTauri.trim());
-      return fromTauri.trim();
+    const info = await invoke<{ base_url: string; token: string }>("get_backend_info");
+    if (info.token && info.token.trim()) {
+      _baseUrl = info.base_url;
+      storeToken(info.token.trim());
+      return info.token.trim();
     }
   } catch {
-    // ignore; fall through to handshake
+    // ignore; fall through
   }
 
-  // Last resort: ask the backend directly (unauthenticated handshake).
   token = await fetchTokenFromBackend();
   if (token) storeToken(token);
   return token;
 }
 
-/** Rehydrates the token after a wipe — tries Tauri then handshake. */
 export async function rehydrateToken(): Promise<string | null> {
   _cachedToken = null;
-  _resolvePromise = null; // clear so resolveApiToken retries fresh
+  _resolvePromise = null;
   return resolveApiToken();
 }
 
-/** Initializes the base URL from Tauri or localStorage. Call once at boot. */
 export async function initApiClientBase(): Promise<void> {
   if (typeof window === "undefined") {
     _baseUrl = "http://localhost:8080/api";
@@ -110,16 +95,23 @@ export async function initApiClientBase(): Promise<void> {
   }
 
   try {
+    const info = await invoke<{ base_url: string; token: string }>("get_backend_info");
+    if (info.base_url && info.base_url.trim()) {
+      _baseUrl = info.base_url.trim();
+      localStorage.setItem(PORT_STORAGE_KEY, info.base_url.replace(/.*:(\d+)\/api/, "$1"));
+      if (info.token && info.token.trim()) {
+        storeToken(info.token.trim());
+      }
+      return;
+    }
+  } catch {
+    // ignore
+  }
+
+  try {
     const storedPort = localStorage.getItem(PORT_STORAGE_KEY);
     if (storedPort) {
       _baseUrl = `http://localhost:${storedPort}/api`;
-      return;
-    }
-
-    const port: string = await invoke("get_api_port");
-    if (port && String(port).trim()) {
-      _baseUrl = `http://localhost:${port}/api`;
-      localStorage.setItem(PORT_STORAGE_KEY, String(port));
       return;
     }
   } catch {
@@ -129,7 +121,6 @@ export async function initApiClientBase(): Promise<void> {
   _baseUrl = "http://localhost:8080/api";
 }
 
-/** Returns the cached token or null. Does NOT attempt re-resolution. */
 export function getCurrentToken(): string | null {
   if (_cachedToken) return _cachedToken;
   if (typeof window !== "undefined") {
@@ -138,7 +129,6 @@ export function getCurrentToken(): string | null {
   return null;
 }
 
-/** Clears all module-level state (for use in test beforeEach). */
 export function clearTokenStorageState(): void {
   _cachedToken = null;
   _resolvePromise = null;

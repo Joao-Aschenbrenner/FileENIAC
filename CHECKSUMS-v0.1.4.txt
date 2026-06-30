@@ -1,0 +1,11 @@
+# FileENIAC v0.1.4 — Checksums
+
+| File | SHA-256 |
+|------|---------|
+| FileENIAC_0.1.3_x64-setup.exe | D4F46CD1E331F7819BFF1D81C6E8CEC7F8279F5FD963F7E7F46EBC428CF127E7 |
+
+## Verification
+
+```powershell
+certutil -hashfile FileENIAC_0.1.3_x64-setup.exe SHA256
+```

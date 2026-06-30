@@ -22,15 +22,23 @@ export default function Onboarding() {
   const [checking, setChecking] = useState(false);
   const [connecting, setConnecting] = useState(false);
 
+  const [healthRetries, setHealthRetries] = useState(0);
+  const [maxRetries] = useState(15);
+
   async function handleCheckBackend() {
     setChecking(true);
     setError("");
-    const ok = await checkHealth();
-    if (ok) {
-      setStep("config");
-    } else {
-      setError("Backend offline. Execute 'fileeniac serve' no terminal antes de continuar.");
+    for (let i = 0; i < maxRetries; i++) {
+      setHealthRetries(i + 1);
+      const ok = await checkHealth();
+      if (ok) {
+        setStep("config");
+        setChecking(false);
+        return;
+      }
+      await new Promise((r) => setTimeout(r, 1000));
     }
+    setError("Não foi possível iniciar o backend local. Tente novamente.");
     setChecking(false);
   }
 
@@ -70,7 +78,7 @@ export default function Onboarding() {
             disabled={checking}
             className="w-full py-3 px-6 bg-white text-eniac-900 rounded-lg font-semibold hover:bg-eniac-100 disabled:opacity-60 transition-colors"
           >
-            {checking ? "Verificando..." : "Começar"}
+            {checking ? `Inicializando backend... (${healthRetries}/${maxRetries})` : "Começar"}
           </button>
           {error && (
             <p className="mt-4 text-red-300 text-sm">{error}</p>

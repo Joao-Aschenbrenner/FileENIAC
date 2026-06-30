@@ -5,6 +5,37 @@ All notable changes to FileENIAC will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.5] - 2026-06-30
+
+### Desktop Self-Contained Backend
+
+- **Backend as sidecar:** Go backend is now bundled as a Tauri sidecar binary (`fileeniac-backend.exe`). No need to run `fileeniac serve` manually.
+- **Auto-start backend:** Tauri spawns the backend automatically on app startup with `--port 0` (dynamic port).
+- **Token injection:** Rust generates the auth token and passes it to the Go backend via `ENIAC_API_TOKEN` env var. No more hardcoded tokens.
+- **`get_backend_info` IPC:** New Rust command returns `{ base_url, token }` to the frontend. Replaces separate `get_api_port` and `get_api_token`.
+- **Health wait with retry:** Onboarding page retries health check for up to 15 seconds instead of showing "execute fileeniac serve".
+- **Backend cleanup:** Closing the app window kills the backend sidecar process (via `on_window_event` CloseRequested).
+- **Sidecar logs:** Backend stdout/stderr are captured to `%LOCALAPPDATA%/com.eniacsystems.fileeniac/logs/backend.log` with token stripping.
+- **CORS dynamic origin:** CORS now reflects the request origin for `localhost` and `127.0.0.1`.
+- **Go serve flags:** `serve` command now accepts `--host` and `--port` separately (instead of `--addr`). Uses `--port 0` for dynamic port allocation. Prints `FILEENIAC_READY` line for IPC.
+- **Build script:** `scripts/build-sidecar.ps1` compiles the Go backend and places it in `src-tauri/binaries/` with the correct target triple suffix.
+
+## [0.1.4] - 2026-06-30
+
+### Security Fixes (External Blind Audit)
+
+- **Auth middleware:** Bearer token validated on all API routes (except `/api/health` and `/api/_handshake/token`).
+- **Handshake endpoint:** `GET /api/_handshake/token` returns the API token.
+- **Duplicate init() removed** from `root.go`.
+- **docker-compose.yml:** Removed stale `FILEENIAC_VAULT_PASSWORD` reference.
+- **Auth test fixed:** Updated expectations to match current subcommands.
+- **Version unified:** `version.go` aligned with Cargo.toml.
+- **CORS restricted** to `http://localhost`.
+- **Graceful shutdown** in `native.go` via signal.Notify.
+- **`serve` command** now calls `ServeFrontend()`.
+- **`ENIAC_API_TOKEN`** passed as env var to Tauri subprocess.
+- **Stale artifacts removed:** `CHECKSUMS.txt`, `CHECKSUMS-v0.1.2.txt`, `backend.exe`.
+
 ## [0.1.3] - 2026-06-29
 
 ### Legal Hardening

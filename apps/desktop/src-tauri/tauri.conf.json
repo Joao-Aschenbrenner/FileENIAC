@@ -1,12 +1,12 @@
 {
   "$schema": "https://raw.githubusercontent.com/nicovrc/tauri-v2-schema/refs/heads/main/tauri.conf.json",
   "productName": "FileENIAC",
-  "version": "0.1.3",
+  "version": "0.1.5",
   "identifier": "com.eniacsystems.fileeniac",
   "build": {
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:1420",
-    "beforeBuildCommand": "npm run build",
+    "beforeBuildCommand": "npm run build:sidecar && npm run build",
     "frontendDist": "../dist"
   },
   "app": {
@@ -30,12 +30,11 @@
             "targets": ["nsis"],
     "icon": ["icons/icon.png", "icons/icon.ico"],
     "licenseFile": "installer-license.txt",
+    "resources": ["WebView2Loader.dll"],
+    "externalBin": ["binaries/fileeniac-backend"],
     "windows": {
       "nsis": {
         "installMode": "currentUser"
-      },
-      "wix": {
-        "language": "pt-BR"
       },
       "webviewInstallMode": {
         "type": "embedBootstrapper"

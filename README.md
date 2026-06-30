@@ -37,6 +37,17 @@ FileENIAC/
 | 4 | Desktop | Dashboard, UI completa |
 | 5 | Agent | API, Observabilidade, IA |
 
+## Modos de uso
+
+### Desktop (recomendado)
+Baixe o instalador, instale e abra. O backend inicia automaticamente. Nao precisa de Docker, terminal, Go, Node ou Rust.
+
+### Docker (opcional)
+Para uso servidor/headless. Veja `docker-compose.yml`.
+
+### CLI (opcional)
+Para usuários avançados: `fileeniac serve --host 127.0.0.1 --port 8080`.
+
 ## Legal
 
 - [MIT License](LICENSE)

@@ -81,7 +81,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       if (generation !== refreshGenerationRef.current) return;
       setBackendOnline(ok);
       if (!ok) {
-        setError("Backend offline — execute FileENIAC ou 'fileeniac-cli serve' primeiro");
+        setError("Backend offline. Tente reiniciar o aplicativo.");
         setSessions([]);
         setActiveSession(null);
         setWorkspacePath("");
