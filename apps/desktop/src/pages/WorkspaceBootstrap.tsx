@@ -13,13 +13,19 @@ export default function WorkspaceBootstrap() {
   const [repos, setRepos] = useState<any[]>([]);
   const [projects, setProjects] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const wsPath = localStorage.getItem("eniac_ws_path") || "";
 
   useEffect(() => {
+    const activeWorkspace = localStorage.getItem("eniac_ws_path") || "";
+    if (!activeWorkspace) {
+      setLoading(false);
+      return;
+    }
     Promise.all([
       getGitHubStatus(),
       getGitHubOrganizations().catch(() => []),
       listRepositories().catch(() => []),
-      listProjects(localStorage.getItem("eniac_ws_path") || "").catch(() => []),
+      listProjects(activeWorkspace).catch(() => []),
     ])
       .then(([s, o, r, p]) => {
         setStatus(s);
@@ -33,9 +39,32 @@ export default function WorkspaceBootstrap() {
 
   if (loading) return <Loader text="Verificando ambiente..." />;
 
+  if (!wsPath) {
+    return (
+      <div className="max-w-xl mx-auto mt-8">
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 text-center">
+          <h2 className="text-2xl font-bold text-gray-800">Nenhum workspace selecionado</h2>
+          <p className="text-sm text-gray-500 mt-2">
+            Escolha ou crie um workspace antes de conectar seus projetos.
+          </p>
+          <button onClick={() => navigate("/")}
+            className="mt-6 px-6 py-3 bg-eniac-600 text-white rounded-lg font-medium hover:bg-eniac-700 transition-colors">
+            Ir para Workspaces
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   const steps = [
     {
-      label: "Autenticação GitHub",
+      label: "Workspace selecionado",
+      done: !!wsPath,
+      action: "/",
+      detail: wsPath,
+    },
+    {
+      label: "Conectar GitHub",
       done: status?.authenticated,
       action: "/github/login",
       detail: status?.authenticated ? `Autenticado como ${status.user}` : "Conectar GitHub",
@@ -47,7 +76,7 @@ export default function WorkspaceBootstrap() {
       detail: `${orgs.length} organizações encontradas`,
     },
     {
-      label: "Repositórios Importados",
+      label: "Importar repositorios",
       done: repos.length > 0,
       action: "/github/repos",
       detail: `${repos.length} repositórios importados`,
@@ -63,8 +92,24 @@ export default function WorkspaceBootstrap() {
   return (
     <div className="max-w-xl mx-auto mt-8">
       <div className="text-center mb-8">
-        <h2 className="text-2xl font-bold text-gray-800">Configuracao do Ambiente</h2>
-        <p className="text-sm text-gray-500 mt-1">Configure seu ambiente em poucos passos</p>
+        <h2 className="text-2xl font-bold text-gray-800">Conectar Projetos ao Workspace</h2>
+        <p className="text-sm text-gray-500 mt-1">Conecte GitHub ou GitLab e importe os projetos para este workspace</p>
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-2 mb-8">
+        <button
+          onClick={() => navigate(status?.authenticated ? "/github/repos" : "/github/login")}
+          className="bg-white rounded-xl border border-gray-200 p-5 text-left shadow-sm hover:border-eniac-400 hover:bg-eniac-50 transition-colors"
+        >
+          <p className="font-semibold text-gray-800">GitHub</p>
+          <p className="text-xs text-gray-500 mt-1">
+            {status?.authenticated ? `Conectado como ${status.user}` : "Conectar conta e escolher repositorios"}
+          </p>
+        </button>
+        <div className="bg-gray-50 rounded-xl border border-gray-200 p-5 text-left shadow-sm opacity-75">
+          <p className="font-semibold text-gray-700">GitLab</p>
+          <p className="text-xs text-gray-500 mt-1">Disponivel em uma proxima versao.</p>
+        </div>
       </div>
 
       <div className="space-y-3 mb-8">
@@ -98,6 +143,10 @@ export default function WorkspaceBootstrap() {
 
       <Card title="Resumo do Ambiente">
         <div className="space-y-2 text-sm">
+          <div className="flex justify-between gap-4">
+            <span className="text-gray-500">Workspace</span>
+            <span className="text-right break-all">{wsPath}</span>
+          </div>
           <div className="flex justify-between">
             <span className="text-gray-500">GitHub</span>
             <span>{status?.authenticated ? `Conectado (${status.user})` : "Desconectado"}</span>
@@ -121,7 +170,7 @@ export default function WorkspaceBootstrap() {
         <div className="text-center mt-6">
           <button onClick={() => navigate("/github/login")}
             className="px-6 py-3 bg-eniac-600 text-white rounded-lg font-medium hover:bg-eniac-700 transition-colors">
-            Iniciar Bootstrap
+            Conectar GitHub
           </button>
         </div>
       )}

@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -80,6 +81,7 @@ func (s *Server) SetBackgroundRunner(bg *bghealth.BackgroundRunner) {
 func (s *Server) routes() {
 	s.mux.HandleFunc("/api/health", s.handleHealth())
 	s.mux.HandleFunc("/api/_handshake/token", s.handleHandshakeToken())
+	s.mux.HandleFunc("/api/workspaces", s.handleWorkspaces())
 	s.mux.HandleFunc("/api/workspace", s.handleWorkspace())
 	s.mux.HandleFunc("/api/projects", s.requireWorkspace(s.handleProjects()))
 	s.mux.HandleFunc("/api/projects/", s.requireWorkspace(s.handleProjectByID()))
@@ -277,6 +279,68 @@ type workspaceRequest struct {
 	Description string `json:"description"`
 }
 
+type workspaceSummary struct {
+	Name        string `json:"name"`
+	Description string `json:"description,omitempty"`
+	Path        string `json:"path"`
+}
+
+// GET /workspaces?root=<folder>
+func (s *Server) handleWorkspaces() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			respondError(w, http.StatusMethodNotAllowed, "method not allowed")
+			return
+		}
+
+		root := strings.TrimSpace(r.URL.Query().Get("root"))
+		if root == "" {
+			respondError(w, http.StatusBadRequest, "informe a pasta-base dos workspaces")
+			return
+		}
+
+		items, err := listWorkspacesInRoot(filepath.Clean(root))
+		if err != nil {
+			respondError(w, http.StatusBadRequest, err.Error())
+			return
+		}
+		respond(w, http.StatusOK, items)
+	}
+}
+
+func listWorkspacesInRoot(root string) ([]workspaceSummary, error) {
+	if err := os.MkdirAll(root, 0700); err != nil {
+		return nil, fmt.Errorf("nao foi possivel preparar a pasta-base: %w", err)
+	}
+
+	items := make([]workspaceSummary, 0)
+	if ws, err := workspace.Inspect(root); err == nil {
+		items = append(items, workspaceSummary{Name: ws.Name, Description: ws.Description, Path: ws.Path})
+	}
+
+	entries, err := os.ReadDir(root)
+	if err != nil {
+		return nil, fmt.Errorf("nao foi possivel ler a pasta-base: %w", err)
+	}
+
+	for _, entry := range entries {
+		if !entry.IsDir() || entry.Name() == ".eniac" {
+			continue
+		}
+		path := filepath.Join(root, entry.Name())
+		ws, err := workspace.Inspect(path)
+		if err != nil {
+			continue
+		}
+		items = append(items, workspaceSummary{Name: ws.Name, Description: ws.Description, Path: ws.Path})
+	}
+
+	sort.Slice(items, func(i, j int) bool {
+		return strings.ToLower(items[i].Name) < strings.ToLower(items[j].Name)
+	})
+	return items, nil
+}
+
 // GET/POST /workspace
 func (s *Server) handleWorkspace() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -317,7 +381,7 @@ func (s *Server) handleWorkspace() http.HandlerFunc {
 func prepareWorkspace(req workspaceRequest) error {
 	path := strings.TrimSpace(req.Path)
 	if path == "" {
-		return fmt.Errorf("informe a pasta onde os workspaces serao alocados")
+		return fmt.Errorf("informe a pasta do workspace")
 	}
 
 	path = filepath.Clean(path)

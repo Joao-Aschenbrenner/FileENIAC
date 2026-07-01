@@ -9,6 +9,7 @@ export const STORAGE_KEYS = {
   apiToken: "eniac_api_token",
   apiPort: "eniac_api_port",
   sessionId: "eniac_session_id",
+  workspacesRoot: "eniac_workspaces_root",
   workspacePath: "eniac_ws_path",
   githubUser: "github_user",
   lgpdConsent: "eniac_lgpd_consent",

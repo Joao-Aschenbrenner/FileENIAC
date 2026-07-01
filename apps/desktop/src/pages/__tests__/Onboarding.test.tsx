@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import Onboarding from '../Onboarding';
+import { createWorkspace, enterWorkspace, listWorkspaces } from '../../api/client';
 
 vi.mock('@tauri-apps/api/core', () => ({
   invoke: vi.fn().mockResolvedValue({
@@ -13,18 +14,23 @@ vi.mock('@tauri-apps/api/core', () => ({
 }));
 
 vi.mock('@tauri-apps/plugin-dialog', () => ({
-  open: vi.fn().mockResolvedValue('/mock/workspace'),
+  open: vi.fn().mockResolvedValue('/mock/base'),
 }));
 
 vi.mock('../../api/client', () => ({
   configureApiClientFromBackendInfo: vi.fn().mockReturnValue(true),
   checkHealth: vi.fn().mockResolvedValue(true),
-  prepareWorkspaceLocation: vi.fn().mockResolvedValue({
-    name: 'mock-workspace',
-    path: '/mock/workspace',
-    projects: 2,
-    servers: 1,
+  listWorkspaces: vi.fn().mockResolvedValue([]),
+  createWorkspace: vi.fn().mockResolvedValue({
+    name: 'Cliente A',
+    path: '/mock/base/Cliente-A',
+    projects: 0,
+    servers: 0,
     deploys: 0,
+  }),
+  enterWorkspace: vi.fn().mockResolvedValue({
+    name: 'Cliente A',
+    path: '/mock/base/Cliente-A',
   }),
 }));
 
@@ -36,9 +42,39 @@ function renderOnboarding() {
   );
 }
 
+async function goToWorkspaceManager() {
+  const start = await screen.findByRole('button', { name: /Comecar/i });
+  fireEvent.click(start);
+  await waitFor(() => {
+    expect(screen.getByRole('heading', { name: /Escolher Pasta dos Workspaces/i })).toBeInTheDocument();
+  });
+
+  fireEvent.change(screen.getByPlaceholderText(/C:\/projetos\/ENIAC_SYSTEMS/i), {
+    target: { value: '/mock/base' },
+  });
+  fireEvent.click(screen.getByRole('button', { name: /Continuar/i }));
+
+  await waitFor(() => {
+    expect(screen.getByRole('heading', { name: /Criar ou Entrar em um Workspace/i })).toBeInTheDocument();
+  });
+}
+
 describe('Onboarding', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    localStorage.clear();
+    vi.mocked(listWorkspaces).mockResolvedValue([]);
+    vi.mocked(createWorkspace).mockResolvedValue({
+      name: 'Cliente A',
+      path: '/mock/base/Cliente-A',
+      projects: 0,
+      servers: 0,
+      deploys: 0,
+    });
+    vi.mocked(enterWorkspace).mockResolvedValue({
+      name: 'Cliente A',
+      path: '/mock/base/Cliente-A',
+    });
   });
 
   it('renders the welcome screen after startup', async () => {
@@ -49,30 +85,47 @@ describe('Onboarding', () => {
     expect(screen.getByRole('heading', { name: /FileENIAC/i })).toBeInTheDocument();
   });
 
-  it('moves to config step when Comecar is clicked', async () => {
+  it('stores the base folder and lists workspaces without creating a workspace at the base', async () => {
     renderOnboarding();
-    const btn = await screen.findByRole('button', { name: /Comecar/i });
-    fireEvent.click(btn);
+    await goToWorkspaceManager();
+
+    expect(localStorage.getItem('eniac_workspaces_root')).toBe('/mock/base');
+    expect(localStorage.getItem('eniac_ws_path')).toBeNull();
+    expect(listWorkspaces).toHaveBeenCalledWith('/mock/base');
+    expect(createWorkspace).not.toHaveBeenCalled();
+  });
+
+  it('creates a workspace inside the base folder and enters it only when selected', async () => {
+    renderOnboarding();
+    await goToWorkspaceManager();
+
+    fireEvent.change(screen.getByPlaceholderText(/Cliente X/i), { target: { value: 'Cliente A' } });
+    fireEvent.click(screen.getByRole('button', { name: /Criar Workspace/i }));
+
     await waitFor(() => {
-      expect(screen.getByRole('heading', { name: /Definir Local de Trabalho/i })).toBeInTheDocument();
+      expect(createWorkspace).toHaveBeenCalledWith('/mock/base/Cliente-A', { name: 'Cliente A', description: '' });
+    });
+    expect(localStorage.getItem('eniac_ws_path')).toBeNull();
+    expect(screen.getByText(/Workspace criado/i)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: /Entrar/i }));
+    await waitFor(() => {
+      expect(enterWorkspace).toHaveBeenCalledWith('/mock/base/Cliente-A');
     });
   });
 
-  it('prepares workspace location and shows summary', async () => {
+  it('shows existing workspaces from the selected base folder', async () => {
+    vi.mocked(listWorkspaces).mockResolvedValue([
+      { name: 'Cliente B', path: '/mock/base/ClienteB' },
+    ]);
+
     renderOnboarding();
-    const btn = await screen.findByRole('button', { name: /Comecar/i });
-    fireEvent.click(btn);
-    await waitFor(() => {
-      expect(screen.getByRole('heading', { name: /Definir Local de Trabalho/i })).toBeInTheDocument();
-    });
+    await goToWorkspaceManager();
 
-    const input = screen.getByPlaceholderText(/C:\/projetos/);
-    fireEvent.change(input, { target: { value: '/mock/workspace' } });
-
-    fireEvent.click(screen.getByRole('button', { name: /Preparar/i }));
+    expect(screen.getByText('Cliente B')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /Entrar/i }));
     await waitFor(() => {
-      expect(screen.getByRole('heading', { name: /Workspace Preparado/i })).toBeInTheDocument();
+      expect(enterWorkspace).toHaveBeenCalledWith('/mock/base/ClienteB');
     });
-    expect(screen.getByText(/mock-workspace/)).toBeInTheDocument();
   });
 });

@@ -80,7 +80,7 @@ export default function GitHubRepos() {
             </p>
           </div>
           <div className="flex gap-2">
-            <button onClick={() => navigate(org ? "/github/orgs" : "/github")}
+            <button onClick={() => navigate(org ? "/github/orgs" : "/bootstrap")}
               className="px-3 py-1.5 border border-gray-300 text-sm rounded-lg hover:bg-gray-50 transition-colors">
               Voltar
             </button>

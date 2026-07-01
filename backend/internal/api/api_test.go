@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -119,6 +120,61 @@ func TestWorkspace_PrepareCreatesWorkspaceInSelectedFolder(t *testing.T) {
 		t.Fatalf("expected workspace path %s, got %v", selected, resp["path"])
 	}
 	workspace.Active().DB.Close()
+}
+
+func TestWorkspaces_ListRootWithoutCreatingWorkspaceAtRoot(t *testing.T) {
+	tmpDir := t.TempDir()
+	root := filepath.Join(tmpDir, "ENIAC_SYSTEMS")
+	workspacePath := filepath.Join(root, "ClienteA")
+	if _, err := workspace.Init("ClienteA", workspacePath, ""); err != nil {
+		t.Fatalf("Init failed: %v", err)
+	}
+	workspace.Active().DB.Close()
+
+	srv := New(":0")
+	req := httptest.NewRequest("GET", "/api/workspaces?root="+url.QueryEscape(root), nil)
+	w := httptest.NewRecorder()
+
+	srv.mux.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d: %s", w.Code, w.Body.String())
+	}
+	if _, err := os.Stat(filepath.Join(root, ".eniac")); !os.IsNotExist(err) {
+		t.Fatalf("expected root to stay as allocation folder without .eniac, got err=%v", err)
+	}
+
+	var resp []workspaceSummary
+	if err := json.NewDecoder(w.Body).Decode(&resp); err != nil {
+		t.Fatalf("decode response: %v", err)
+	}
+	if len(resp) != 1 {
+		t.Fatalf("expected 1 workspace, got %d", len(resp))
+	}
+	if resp[0].Name != "ClienteA" || resp[0].Path != workspacePath {
+		t.Fatalf("unexpected workspace summary: %+v", resp[0])
+	}
+}
+
+func TestWorkspaces_ListCreatesBaseFolderOnly(t *testing.T) {
+	tmpDir := t.TempDir()
+	root := filepath.Join(tmpDir, "new-base")
+
+	srv := New(":0")
+	req := httptest.NewRequest("GET", "/api/workspaces?root="+url.QueryEscape(root), nil)
+	w := httptest.NewRecorder()
+
+	srv.mux.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d: %s", w.Code, w.Body.String())
+	}
+	if _, err := os.Stat(root); err != nil {
+		t.Fatalf("expected base folder to be created: %v", err)
+	}
+	if _, err := os.Stat(filepath.Join(root, ".eniac")); !os.IsNotExist(err) {
+		t.Fatalf("expected no workspace at base folder, got err=%v", err)
+	}
 }
 
 func TestProjects_CRUD(t *testing.T) {

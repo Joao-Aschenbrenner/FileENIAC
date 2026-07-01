@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { checkHealth, listProjects, prepareWorkspaceLocation } from '../client';
+import { checkHealth, createWorkspace, enterWorkspace, listProjects, listWorkspaces } from '../client';
 import { clearTokenStorageState } from '../../auth/tokenStorage';
 
 const mockFetch = vi.fn();
@@ -73,26 +73,56 @@ describe('listProjects', () => {
   });
 });
 
-describe('prepareWorkspaceLocation', () => {
-  it('posts selected allocation path and stores returned workspace path', async () => {
+describe('workspace flow', () => {
+  it('lists workspaces under the selected base folder without storing active workspace path', async () => {
     localStorage.setItem('eniac_api_token', 'unit-test-token');
     setupFetch(async (url: string) => {
-      if (url === 'http://localhost:8080/api/workspace') {
-        return mockResponse({ name: 'ENIAC_SYSTEMS', path: 'C:/Users/USUARIO/Desktop/PROJETOS/ENIAC_SYSTEMS', projects: 0 });
+      if (url === 'http://localhost:8080/api/workspaces?root=C%3A%2FUsers%2FUSUARIO%2FDesktop%2FPROJETOS%2FENIAC_SYSTEMS') {
+        return mockResponse([{ name: 'Cliente A', path: 'C:/Users/USUARIO/Desktop/PROJETOS/ENIAC_SYSTEMS/Cliente-A' }]);
       }
       return undefined;
     });
 
-    const result = await prepareWorkspaceLocation('C:/Users/USUARIO/Desktop/PROJETOS/ENIAC_SYSTEMS');
+    const result = await listWorkspaces('C:/Users/USUARIO/Desktop/PROJETOS/ENIAC_SYSTEMS');
 
-    expect(result.name).toBe('ENIAC_SYSTEMS');
-    expect(localStorage.getItem('eniac_ws_path')).toBe('C:/Users/USUARIO/Desktop/PROJETOS/ENIAC_SYSTEMS');
+    expect(result).toHaveLength(1);
+    expect(localStorage.getItem('eniac_ws_path')).toBeNull();
+  });
+
+  it('creates a workspace at the requested workspace path without entering it', async () => {
+    localStorage.setItem('eniac_api_token', 'unit-test-token');
+    setupFetch(async (url: string) => {
+      if (url === 'http://localhost:8080/api/workspace') {
+        return mockResponse({ name: 'Cliente A', path: 'C:/Users/USUARIO/Desktop/PROJETOS/ENIAC_SYSTEMS/Cliente-A', projects: 0 });
+      }
+      return undefined;
+    });
+
+    const result = await createWorkspace('C:/Users/USUARIO/Desktop/PROJETOS/ENIAC_SYSTEMS/Cliente-A', { name: 'Cliente A' });
+
+    expect(result.name).toBe('Cliente A');
+    expect(localStorage.getItem('eniac_ws_path')).toBeNull();
     expect(mockFetch).toHaveBeenCalledWith(
       'http://localhost:8080/api/workspace',
       expect.objectContaining({
         method: 'POST',
-        body: JSON.stringify({ path: 'C:/Users/USUARIO/Desktop/PROJETOS/ENIAC_SYSTEMS' }),
+        body: JSON.stringify({ path: 'C:/Users/USUARIO/Desktop/PROJETOS/ENIAC_SYSTEMS/Cliente-A', name: 'Cliente A' }),
       }),
     );
+  });
+
+  it('stores active workspace path only when entering a workspace', async () => {
+    localStorage.setItem('eniac_api_token', 'unit-test-token');
+    setupFetch(async (url: string) => {
+      if (url === 'http://localhost:8080/api/workspace?workspace=C%3A%2FUsers%2FUSUARIO%2FDesktop%2FPROJETOS%2FENIAC_SYSTEMS%2FCliente-A') {
+        return mockResponse({ name: 'Cliente A', path: 'C:/Users/USUARIO/Desktop/PROJETOS/ENIAC_SYSTEMS/Cliente-A', projects: 0 });
+      }
+      return undefined;
+    });
+
+    const result = await enterWorkspace('C:/Users/USUARIO/Desktop/PROJETOS/ENIAC_SYSTEMS/Cliente-A');
+
+    expect(result.name).toBe('Cliente A');
+    expect(localStorage.getItem('eniac_ws_path')).toBe('C:/Users/USUARIO/Desktop/PROJETOS/ENIAC_SYSTEMS/Cliente-A');
   });
 });

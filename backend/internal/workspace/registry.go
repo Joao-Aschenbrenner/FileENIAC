@@ -49,6 +49,11 @@ func Active() *Context {
 }
 
 func Init(name, path, desc string) (*Workspace, error) {
+	if activeContext != nil {
+		_ = activeContext.DB.Close()
+		activeContext = nil
+	}
+
 	wsDir := filepath.Join(path, ".eniac")
 	if err := os.MkdirAll(wsDir, 0700); err != nil {
 		return nil, fmt.Errorf("failed to create workspace dir: %w", err)
@@ -102,6 +107,24 @@ func Init(name, path, desc string) (*Workspace, error) {
 	)
 
 	return ws, nil
+}
+
+func Inspect(path string) (*Workspace, error) {
+	wsDir := filepath.Join(path, ".eniac")
+	if _, err := os.Stat(wsDir); os.IsNotExist(err) {
+		return nil, fmt.Errorf("no workspace found at %s", path)
+	}
+
+	cfg, err := loadConfig(wsDir)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load config: %w", err)
+	}
+
+	return &Workspace{
+		Name:        cfg.Workspace.Name,
+		Description: cfg.Workspace.Description,
+		Path:        path,
+	}, nil
 }
 
 func Open(path string) (*Workspace, error) {

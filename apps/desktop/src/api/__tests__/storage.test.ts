@@ -68,6 +68,7 @@ describe("storage helpers", () => {
     it("removes all STORAGE_KEYS entries", () => {
       localStorage.setItem(STORAGE_KEYS.apiToken, "t1");
       localStorage.setItem(STORAGE_KEYS.sessionId, "s1");
+      localStorage.setItem(STORAGE_KEYS.workspacesRoot, "root");
       localStorage.setItem(STORAGE_KEYS.workspacePath, "w1");
       localStorage.setItem(STORAGE_KEYS.themeMode, "dark");
 
@@ -75,6 +76,7 @@ describe("storage helpers", () => {
 
       expect(localStorage.getItem(STORAGE_KEYS.apiToken)).toBeNull();
       expect(localStorage.getItem(STORAGE_KEYS.sessionId)).toBeNull();
+      expect(localStorage.getItem(STORAGE_KEYS.workspacesRoot)).toBeNull();
       expect(localStorage.getItem(STORAGE_KEYS.workspacePath)).toBeNull();
       expect(localStorage.getItem(STORAGE_KEYS.themeMode)).toBeNull();
     });
@@ -84,6 +86,7 @@ describe("storage helpers", () => {
     it("removes only auth-related keys", () => {
       localStorage.setItem(STORAGE_KEYS.apiToken, "token");
       localStorage.setItem(STORAGE_KEYS.sessionId, "session");
+      localStorage.setItem(STORAGE_KEYS.workspacesRoot, "root");
       localStorage.setItem(STORAGE_KEYS.workspacePath, "workspace");
       localStorage.setItem(STORAGE_KEYS.githubUser, "gh-user");
       localStorage.setItem(STORAGE_KEYS.themeMode, "dark"); // should NOT be cleared
@@ -94,6 +97,7 @@ describe("storage helpers", () => {
       expect(localStorage.getItem(STORAGE_KEYS.sessionId)).toBeNull();
       expect(localStorage.getItem(STORAGE_KEYS.workspacePath)).toBeNull();
       expect(localStorage.getItem(STORAGE_KEYS.githubUser)).toBeNull();
+      expect(localStorage.getItem(STORAGE_KEYS.workspacesRoot)).toBe("root");
       expect(localStorage.getItem(STORAGE_KEYS.themeMode)).toBe("dark");
     });
   });

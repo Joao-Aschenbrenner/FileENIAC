@@ -5,6 +5,17 @@ All notable changes to FileENIAC will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.9] - 2026-07-01
+
+### Fixed — Correct Workspace Flow
+
+- **Base folder separated from workspace:** onboarding now stores the folder where workspaces will be allocated without creating `.eniac` there.
+- **Multiple workspaces supported in onboarding:** users can create any number of workspaces as subfolders inside the selected base folder, then choose which one to enter.
+- **Active workspace stored only on entry:** `eniac_ws_path` is set after selecting a workspace, not when choosing the base folder.
+- **Workspace listing added:** `GET /api/workspaces?root=...` lists existing workspaces inside the selected base folder without activating them.
+- **Post-entry flow corrected:** after entering a workspace, the app sends users to connect/import projects instead of jumping straight to the dashboard.
+- **User copy corrected:** visible labels now describe choosing a base folder, creating workspaces, entering a workspace, and connecting project sources.
+
 ## [0.1.8] - 2026-07-01
 
 ### Fixed — Workspace Allocation Onboarding

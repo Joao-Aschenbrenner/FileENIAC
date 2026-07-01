@@ -160,8 +160,16 @@ export async function getWorkspace(wsPath: string): Promise<any> {
   return get(`/workspace?workspace=${encodeURIComponent(wsPath)}`);
 }
 
-export async function prepareWorkspaceLocation(basePath: string): Promise<any> {
-  const info = await post("/workspace", { path: basePath });
+export async function listWorkspaces(rootPath: string): Promise<any[]> {
+  return get(`/workspaces?root=${encodeURIComponent(rootPath)}`);
+}
+
+export async function createWorkspace(workspacePath: string, data: { name?: string; description?: string } = {}): Promise<any> {
+  return post("/workspace", { path: workspacePath, ...data });
+}
+
+export async function enterWorkspace(wsPath: string): Promise<any> {
+  const info = await getWorkspace(wsPath);
   if (info?.path) {
     storageSet(STORAGE_KEYS.workspacePath, info.path);
   }
