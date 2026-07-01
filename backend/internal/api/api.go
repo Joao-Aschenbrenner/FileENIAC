@@ -117,7 +117,7 @@ func (s *Server) routes() {
 }
 
 func (s *Server) ListenAndServe() error {
-	srv := &http.Server{Addr: s.addr, Handler: s.authMiddleware(s.rateLimitMiddleware(s.corsMiddleware(s.mux)))}
+	srv := &http.Server{Addr: s.addr, Handler: s.corsMiddleware(s.authMiddleware(s.rateLimitMiddleware(s.mux)))}
 	s.mu.Lock()
 	s.srv = srv
 	s.mu.Unlock()
@@ -131,7 +131,7 @@ func (s *Server) ListenDynamic() (string, error) {
 	}
 	actualAddr := listener.Addr().String()
 	log.L().Info("api server listening (dynamic)", zap.String("addr", actualAddr))
-	srv := &http.Server{Handler: s.authMiddleware(s.rateLimitMiddleware(s.corsMiddleware(s.mux)))}
+	srv := &http.Server{Handler: s.corsMiddleware(s.authMiddleware(s.rateLimitMiddleware(s.mux)))}
 	s.mu.Lock()
 	s.srv = srv
 	s.mu.Unlock()
@@ -155,18 +155,27 @@ func (s *Server) corsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		origin := r.Header.Get("Origin")
 		allowed := "http://localhost"
-		if strings.HasPrefix(origin, "http://127.0.0.1:") || strings.HasPrefix(origin, "http://localhost:") {
+		if isAllowedLocalOrigin(origin) {
 			allowed = origin
 		}
 		w.Header().Set("Access-Control-Allow-Origin", allowed)
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Workspace")
 		if r.Method == http.MethodOptions {
+			log.L().Debug("cors preflight", zap.String("origin", origin), zap.String("path", r.URL.Path))
 			w.WriteHeader(http.StatusOK)
 			return
 		}
 		next.ServeHTTP(w, r)
 	})
+}
+
+func isAllowedLocalOrigin(origin string) bool {
+	return strings.HasPrefix(origin, "http://127.0.0.1:") ||
+		strings.HasPrefix(origin, "http://localhost:") ||
+		origin == "tauri://localhost" ||
+		origin == "http://tauri.localhost" ||
+		origin == "https://tauri.localhost"
 }
 
 func (s *Server) Close() error {
@@ -205,6 +214,7 @@ func respondError(w http.ResponseWriter, status int, msg string) {
 
 func (s *Server) handleHealth() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		log.L().Debug("health check", zap.String("remote", r.RemoteAddr))
 		respond(w, http.StatusOK, map[string]string{"status": "ok"})
 	}
 }

@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { invoke } from "@tauri-apps/api/core";
 import {
+  configureBackendAuth,
   resolveApiToken,
   rehydrateToken,
   clearStoredToken,
@@ -20,6 +22,8 @@ vi.stubGlobal("fetch", mockFetch);
 beforeEach(() => {
   localStorage.clear();
   mockFetch.mockReset();
+  vi.mocked(invoke).mockReset();
+  vi.mocked(invoke).mockResolvedValue(undefined);
   clearTokenStorageState();
 });
 
@@ -73,6 +77,36 @@ describe("tokenStorage", () => {
       expect(token).toBe("initial-token");
       // fetch should NOT have been called (localStorage had a token)
       expect(mockFetch).not.toHaveBeenCalled();
+    });
+
+    it("prefers the current Tauri token over a stale stored token", async () => {
+      localStorage.setItem("eniac_api_token", "stale-token");
+      vi.mocked(invoke).mockResolvedValueOnce({
+        base_url: "http://127.0.0.1:49152/api",
+        token: "fresh-token",
+        ready: true,
+      });
+
+      const token = await resolveApiToken();
+
+      expect(token).toBe("fresh-token");
+      expect(localStorage.getItem("eniac_api_token")).toBe("fresh-token");
+      expect(getBaseUrl()).toBe("http://127.0.0.1:49152/api");
+    });
+  });
+
+  describe("configureBackendAuth", () => {
+    it("stores base URL, port and token from backend info", () => {
+      const configured = configureBackendAuth({
+        base_url: "http://127.0.0.1:50123/api",
+        token: "runtime-token",
+        ready: true,
+      });
+
+      expect(configured).toBe(true);
+      expect(getBaseUrl()).toBe("http://127.0.0.1:50123/api");
+      expect(localStorage.getItem("eniac_api_port")).toBe("50123");
+      expect(localStorage.getItem("eniac_api_token")).toBe("runtime-token");
     });
   });
 

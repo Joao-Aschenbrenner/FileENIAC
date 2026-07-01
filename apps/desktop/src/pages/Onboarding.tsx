@@ -2,7 +2,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { invoke } from "@tauri-apps/api/core";
-import { getWorkspace, checkHealth } from "../api/client";
+import { getWorkspace, checkHealth, configureApiClientFromBackendInfo } from "../api/client";
+import type { BackendInfo } from "../auth/tokenStorage";
 import { open } from "@tauri-apps/plugin-dialog";
 import { AppLoadingState } from "../components/AppLoadingState";
 import { AppErrorState } from "../components/AppErrorState";
@@ -33,11 +34,11 @@ export default function Onboarding() {
 
     async function waitForBackend() {
       try {
-        const info = await invoke<{ base_url: string; token: string; ready: boolean }>("get_backend_info");
+        const info = await invoke<BackendInfo>("get_backend_info");
 
         if (cancelled) return;
 
-        if (!info.ready || !info.base_url) {
+        if (!configureApiClientFromBackendInfo(info)) {
           const diag = await invoke<{ startup_error: { message: string } | null }>("get_diagnostics").catch(() => null);
           const msg = diag?.startup_error?.message || "Nao foi possivel configurar o ambiente automaticamente.";
           setStartupStatus("failed");
@@ -58,7 +59,8 @@ export default function Onboarding() {
 
         setStartupStatus("failed");
         setStartupError("O servico nao respondeu a tempo. Tente novamente.");
-      } catch {
+      } catch (err) {
+        console.error("FileENIAC startup check failed", err);
         if (!cancelled) {
           setStartupStatus("failed");
           setStartupError("Erro ao verificar o ambiente.");
@@ -76,8 +78,8 @@ export default function Onboarding() {
     setError("");
 
     try {
-      const info = await invoke<{ base_url: string; token: string; ready: boolean }>("get_backend_info");
-      if (info.ready && info.base_url) {
+      const info = await invoke<BackendInfo>("get_backend_info");
+      if (configureApiClientFromBackendInfo(info)) {
         setStartupStatus("ready");
         let retries = 0;
         while (retries < 15) {
@@ -89,7 +91,8 @@ export default function Onboarding() {
       }
       setStartupStatus("failed");
       setStartupError("O servico nao respondeu a tempo.");
-    } catch {
+    } catch (err) {
+      console.error("FileENIAC startup retry failed", err);
       setStartupStatus("failed");
       setStartupError("Erro ao verificar o ambiente.");
     }

@@ -11,6 +11,7 @@ interface AppErrorStateProps {
 
 interface DiagnosticsInfo {
   log_path: string;
+  bootstrap_log_path?: string;
   startup_error: {
     message: string;
     exit_code: number | null;
@@ -34,7 +35,7 @@ export function AppErrorState({ title, message, onRetry }: AppErrorStateProps) {
 
   async function copyDetails() {
     const lines = [
-      `FileENIAC v0.1.6 - Diagnostico`,
+      `FileENIAC v0.1.7 - Diagnostico`,
       ``,
       `Erro: ${message}`,
     ];
@@ -46,6 +47,9 @@ export function AppErrorState({ title, message, onRetry }: AppErrorStateProps) {
     }
     if (diag?.log_path) {
       lines.push(`Log: ${diag.log_path}`);
+    }
+    if (diag?.bootstrap_log_path) {
+      lines.push(`Bootstrap: ${diag.bootstrap_log_path}`);
     }
     try {
       await navigator.clipboard.writeText(lines.join("\n"));
@@ -95,6 +99,12 @@ export function AppErrorState({ title, message, onRetry }: AppErrorStateProps) {
             )}
             {diag?.log_path && (
               <p className="text-xs text-eniac-500">Log: {diag.log_path}</p>
+            )}
+            {diag?.bootstrap_log_path && (
+              <p className="text-xs text-eniac-500">Bootstrap: {diag.bootstrap_log_path}</p>
+            )}
+            {!diag && (
+              <p className="text-xs text-eniac-500">Diagnostico local indisponivel.</p>
             )}
             <button
               onClick={copyDetails}

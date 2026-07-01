@@ -1,6 +1,6 @@
 [package]
 name = "fileeniac"
-version = "0.1.6"
+version = "0.1.7"
 description = "FileENIAC Desktop"
 authors = ["ENIAC Systems"]
 edition = "2021"

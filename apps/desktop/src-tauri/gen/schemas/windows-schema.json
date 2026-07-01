@@ -567,6 +567,24 @@
           "markdownDescription": "Enables the get_api_token command without any pre-configured scope."
         },
         {
+          "description": "Enables the get_backend_info command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-get-backend-info",
+          "markdownDescription": "Enables the get_backend_info command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the get_diagnostics command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-get-diagnostics",
+          "markdownDescription": "Enables the get_diagnostics command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the get_sidecar_log_path command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-get-sidecar-log-path",
+          "markdownDescription": "Enables the get_sidecar_log_path command without any pre-configured scope."
+        },
+        {
           "description": "Enables the set_api_port command without any pre-configured scope.",
           "type": "string",
           "const": "allow-set-api-port",
@@ -589,6 +607,24 @@
           "type": "string",
           "const": "deny-get-api-token",
           "markdownDescription": "Denies the get_api_token command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the get_backend_info command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-get-backend-info",
+          "markdownDescription": "Denies the get_backend_info command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the get_diagnostics command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-get-diagnostics",
+          "markdownDescription": "Denies the get_diagnostics command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the get_sidecar_log_path command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-get-sidecar-log-path",
+          "markdownDescription": "Denies the get_sidecar_log_path command without any pre-configured scope."
         },
         {
           "description": "Denies the set_api_port command without any pre-configured scope.",

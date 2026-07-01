@@ -118,13 +118,8 @@ describe("API client security headers", () => {
   });
 
   it("Authorization remains absent for /api/health when no token present", async () => {
-    // /health is the public fallback path — the spec wants to ensure it
-    // never accidentally carries auth when there's no token.
-    mockFetch.mockResolvedValueOnce({
-      ok: false,
-      status: 404,
-      json: async () => ({}),
-    });
+    // /health is a public startup probe and must not resolve token sources or
+    // send custom headers that trigger CORS preflight.
     mockFetch.mockResolvedValueOnce({
       ok: true,
       json: async () => ({ status: "ok" }),
@@ -133,6 +128,9 @@ describe("API client security headers", () => {
     expect(ok).toBe(true);
     const headers = lastHeadersContaining(/\/health$/);
     expect(headers["Authorization"]).toBeUndefined();
+    expect(headers["X-Workspace"]).toBeUndefined();
+    expect(headers["User-Agent"]).toBeUndefined();
+    expect(mockFetch).toHaveBeenCalledTimes(1);
   });
 
   it("CORS-relevant headers are NOT exposed (no proxy-style abuse surface)", async () => {

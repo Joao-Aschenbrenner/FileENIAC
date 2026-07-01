@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 import { invoke } from "@tauri-apps/api/core";
-import { resolveApiToken } from "../auth/tokenStorage";
+import { BackendInfo, configureBackendAuth, resolveApiToken } from "../auth/tokenStorage";
 import { ApiError } from "./errors";
 import { STORAGE_KEYS, storageGet } from "./storage";
 
@@ -18,13 +18,19 @@ export class TimeoutError extends Error {
 
 export async function initApiClient(): Promise<void> {
   try {
-    const info = await invoke<{ base_url: string; token: string; ready: boolean }>("get_backend_info");
-    if (info.ready && info.base_url && info.base_url.trim()) {
-      BASE_URL = info.base_url.trim();
+    const info = await invoke<BackendInfo>("get_backend_info");
+    if (configureApiClientFromBackendInfo(info)) {
+      return;
     }
   } catch {
     BASE_URL = "http://localhost:8080/api";
   }
+}
+
+export function configureApiClientFromBackendInfo(info: BackendInfo): boolean {
+  if (!configureBackendAuth(info)) return false;
+  BASE_URL = info.base_url.trim();
+  return true;
 }
 
 async function get(path: string): Promise<any> {
@@ -125,10 +131,19 @@ function ws(path: string, extraParams?: string): string {
 }
 
 export async function checkHealth(): Promise<boolean> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), GET_TIMEOUT_MS);
   try {
-    const data = await get("/health");
+    const res = await fetch(`${BASE_URL}/health`, {
+      signal: controller.signal,
+      headers: { Accept: "application/json" },
+    });
+    clearTimeout(timer);
+    if (!res.ok) return false;
+    const data = await res.json();
     return data.status === "ok";
   } catch {
+    clearTimeout(timer);
     return false;
   }
 }

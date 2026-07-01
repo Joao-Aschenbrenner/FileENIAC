@@ -33,8 +33,6 @@ describe('checkHealth', () => {
       expect.objectContaining({
         headers: expect.objectContaining({
           Accept: 'application/json',
-          'User-Agent': 'FileENIAC/1.0.0',
-          'X-Workspace': '',
         }),
         signal: expect.any(AbortSignal),
       }),

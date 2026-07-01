@@ -5,6 +5,18 @@ All notable changes to FileENIAC will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.7] - 2026-07-01
+
+### Fixed — Installed Desktop Startup
+
+- **Tauri IPC allowed in release:** Added explicit app permissions for `get_backend_info`, `get_diagnostics`, and `get_sidecar_log_path`, preventing the installed app from failing with "Erro ao verificar o ambiente." before diagnostics could load.
+- **Startup base URL synchronized:** Onboarding now applies the dynamic sidecar `base_url` immediately before probing `/health`, avoiding fallback to `localhost:8080` while the sidecar runs on a random port.
+- **Runtime token refreshed:** The current Tauri sidecar token now replaces stale `localStorage` tokens on startup, preventing protected API calls from using a previous run's token.
+- **Health probe simplified:** `/api/health` is now called without auth/workspace headers to avoid unnecessary CORS preflight during startup.
+- **CORS fixed for Tauri WebView:** Backend now permits `http://tauri.localhost` and `X-Workspace`, and handles preflight before auth for protected routes.
+- **Diagnostics improved:** Diagnostic output now includes both `backend.log` and `fileeniac-bootstrap.log` paths.
+- **Smoke/stress scripts:** Added desktop startup smoke and stress scripts that open one app instance at a time, validate `backend_ready`, call `/api/health`, close the app, and check for orphan backend processes.
+
 ## [0.1.6] - 2026-07-01
 
 ### Reliability — Sidecar Startup

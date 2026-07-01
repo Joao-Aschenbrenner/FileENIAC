@@ -9,6 +9,12 @@ let _baseUrl: string | null = null;
 let _cachedToken: string | null = null;
 let _resolvePromise: Promise<string | null> | null = null;
 
+export interface BackendInfo {
+  base_url: string;
+  token: string;
+  ready: boolean;
+}
+
 export function getBaseUrl(): string {
   if (_baseUrl) return _baseUrl;
   return "http://localhost:8080/api";
@@ -44,6 +50,28 @@ function storeToken(token: string): void {
   }
 }
 
+export function configureBackendAuth(info: BackendInfo): boolean {
+  if (!info.ready || !info.base_url || !info.base_url.trim()) return false;
+
+  const baseUrl = info.base_url.trim();
+  _baseUrl = baseUrl;
+
+  if (typeof window !== "undefined") {
+    const port = baseUrl.match(/:(\d+)\/api$/)?.[1];
+    if (port) localStorage.setItem(PORT_STORAGE_KEY, port);
+  }
+
+  const token = info.token?.trim();
+  if (token) {
+    storeToken(token);
+    _resolvePromise = Promise.resolve(token);
+  } else {
+    _resolvePromise = null;
+  }
+
+  return true;
+}
+
 export function clearStoredToken(): void {
   _cachedToken = null;
   if (typeof window !== "undefined") {
@@ -63,19 +91,17 @@ export async function resolveApiToken(): Promise<string | null> {
 }
 
 async function _doResolve(): Promise<string | null> {
-  let token = getStoredToken();
-  if (token) return token;
-
   try {
-    const info = await invoke<{ base_url: string; token: string; ready: boolean }>("get_backend_info");
-    if (info.ready && info.token && info.token.trim()) {
-      _baseUrl = info.base_url;
-      storeToken(info.token.trim());
+    const info = await invoke<BackendInfo>("get_backend_info");
+    if (configureBackendAuth(info) && info.token?.trim()) {
       return info.token.trim();
     }
   } catch {
     // ignore; fall through
   }
+
+  let token = getStoredToken();
+  if (token) return token;
 
   token = await fetchTokenFromBackend();
   if (token) storeToken(token);
@@ -95,13 +121,8 @@ export async function initApiClientBase(): Promise<void> {
   }
 
   try {
-    const info = await invoke<{ base_url: string; token: string; ready: boolean }>("get_backend_info");
-    if (info.ready && info.base_url && info.base_url.trim()) {
-      _baseUrl = info.base_url.trim();
-      localStorage.setItem(PORT_STORAGE_KEY, info.base_url.replace(/.*:(\d+)\/api/, "$1"));
-      if (info.token && info.token.trim()) {
-        storeToken(info.token.trim());
-      }
+    const info = await invoke<BackendInfo>("get_backend_info");
+    if (configureBackendAuth(info)) {
       return;
     }
   } catch {

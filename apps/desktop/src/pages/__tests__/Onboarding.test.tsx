@@ -17,6 +17,7 @@ vi.mock('@tauri-apps/plugin-dialog', () => ({
 }));
 
 vi.mock('../../api/client', () => ({
+  configureApiClientFromBackendInfo: vi.fn().mockReturnValue(true),
   checkHealth: vi.fn().mockResolvedValue(true),
   getWorkspace: vi.fn().mockResolvedValue({
     name: 'mock-workspace',

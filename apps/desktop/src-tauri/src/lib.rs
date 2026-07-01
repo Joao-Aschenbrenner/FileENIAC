@@ -2,8 +2,8 @@
 use serde::Serialize;
 use std::sync::{Arc, Condvar, Mutex};
 use tauri::Manager;
-use tauri_plugin_shell::ShellExt;
 use tauri_plugin_shell::process::CommandChild;
+use tauri_plugin_shell::ShellExt;
 
 struct BackendState {
     port: String,
@@ -16,6 +16,7 @@ struct AppState {
     backend: Mutex<BackendState>,
     port_ready: Arc<Condvar>,
     log_path: String,
+    bootstrap_log_path: String,
     startup_error: Mutex<Option<StartupError>>,
 }
 
@@ -35,6 +36,7 @@ struct BackendInfo {
 #[derive(Serialize)]
 struct DiagnosticsInfo {
     log_path: String,
+    bootstrap_log_path: String,
     startup_error: Option<StartupError>,
 }
 
@@ -76,11 +78,26 @@ fn write_log(log_path: &str, line: &str) {
 fn get_backend_info(state: tauri::State<AppState>) -> BackendInfo {
     let cvar = state.port_ready.clone();
     let mut b = state.backend.lock().unwrap();
-    if b.port.is_empty() && !b.ready {
-        let _guard = cvar
-            .wait_timeout(b, std::time::Duration::from_secs(15))
-            .unwrap();
-        b = _guard.0;
+    let deadline = std::time::Instant::now() + std::time::Duration::from_secs(20);
+    while b.port.is_empty() && !b.ready {
+        let now = std::time::Instant::now();
+        if now >= deadline {
+            write_log(
+                &state.bootstrap_log_path,
+                "[bootstrap] get_backend_info_timeout waiting_for_port=true",
+            );
+            let mut err = state.startup_error.lock().unwrap();
+            if err.is_none() {
+                *err = Some(StartupError {
+                    message: "Tempo esgotado ao preparar o ambiente local.".to_string(),
+                    exit_code: None,
+                });
+            }
+            break;
+        }
+        let remaining = deadline.saturating_duration_since(now);
+        let guard = cvar.wait_timeout(b, remaining).unwrap();
+        b = guard.0;
     }
     BackendInfo {
         base_url: if b.port.is_empty() {
@@ -98,6 +115,7 @@ fn get_diagnostics(state: tauri::State<AppState>) -> DiagnosticsInfo {
     let err = state.startup_error.lock().unwrap().clone();
     DiagnosticsInfo {
         log_path: state.log_path.clone(),
+        bootstrap_log_path: state.bootstrap_log_path.clone(),
         startup_error: err,
     }
 }
@@ -131,7 +149,7 @@ pub fn run() {
 
             let _ = std::fs::remove_file(&bootstrap_log_path);
             write_log(&bootstrap_log_path, "[bootstrap] starting FileENIAC desktop");
-            write_log(&bootstrap_log_path, &format!("[bootstrap] app_version=0.1.6"));
+            write_log(&bootstrap_log_path, &format!("[bootstrap] app_version=0.1.7"));
 
             let port_ready = Arc::new(Condvar::new());
 
@@ -144,6 +162,7 @@ pub fn run() {
                 }),
                 port_ready: port_ready.clone(),
                 log_path: log_path.clone(),
+                bootstrap_log_path: bootstrap_log_path.clone(),
                 startup_error: Mutex::new(None),
             };
 
@@ -193,9 +212,13 @@ pub fn run() {
                                                         if let Some(port_val) = part.strip_prefix("port=") {
                                                             let state = app_handle.state::<AppState>();
                                                             let mut b = state.backend.lock().unwrap();
-                                                            b.port = port_val.to_string();
-                                                            b.ready = true;
-                                                            write_log(&bootstrap_log_clone, &format!("[bootstrap] backend_ready port={}", port_val));
+                                                             b.port = port_val.to_string();
+                                                             b.ready = true;
+                                                            {
+                                                                let mut err = state.startup_error.lock().unwrap();
+                                                                *err = None;
+                                                            }
+                                                             write_log(&bootstrap_log_clone, &format!("[bootstrap] backend_ready port={}", port_val));
                                                             drop(b);
                                                             port_ready_clone.notify_all();
                                                         }
