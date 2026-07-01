@@ -6,9 +6,9 @@ interface ErrorStateProps {
 
 export function ErrorState({ message, onRetry }: ErrorStateProps) {
   return (
-    <div className="bg-red-50 border border-red-200 rounded-xl p-5 text-center">
+    <div className="bg-red-900/20 border border-red-700/30 rounded-xl p-5 text-center">
       <div className="text-3xl mb-2">⚠️</div>
-      <p className="text-sm text-red-700 mb-3">{message}</p>
+      <p className="text-sm text-red-300 mb-3">{message}</p>
       {onRetry && (
         <button
           onClick={onRetry}

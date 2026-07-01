@@ -11,13 +11,13 @@ class ErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white p-8">
+        <div className="min-h-screen flex items-center justify-center bg-eniac-950 text-white p-8">
           <div className="text-center max-w-lg">
             <h1 className="text-2xl font-bold mb-4">Erro inesperado</h1>
-            <p className="text-gray-400 mb-6">{this.state.error?.message || 'Ocorreu um erro inesperado.'}</p>
+            <p className="text-eniac-300 mb-6">{this.state.error?.message || 'Ocorreu um erro inesperado.'}</p>
             <button onClick={() => { this.setState({ hasError: false }); window.location.href = '/'; }}
-              className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors">
-              Voltar ao início
+              className="px-6 py-2 bg-eniac-600 hover:bg-eniac-700 rounded-lg transition-colors">
+              Voltar ao inicio
             </button>
           </div>
         </div>

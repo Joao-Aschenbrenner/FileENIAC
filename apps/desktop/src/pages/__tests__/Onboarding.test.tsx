@@ -4,6 +4,14 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import Onboarding from '../Onboarding';
 
+vi.mock('@tauri-apps/api/core', () => ({
+  invoke: vi.fn().mockResolvedValue({
+    base_url: 'http://127.0.0.1:12345/api',
+    token: 'test-token',
+    ready: true,
+  }),
+}));
+
 vi.mock('@tauri-apps/plugin-dialog', () => ({
   open: vi.fn().mockResolvedValue('/mock/workspace'),
 }));
@@ -31,15 +39,18 @@ describe('Onboarding', () => {
     vi.clearAllMocks();
   });
 
-  it('renders the welcome screen', () => {
+  it('renders the welcome screen after startup', async () => {
     renderOnboarding();
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Comecar/i })).toBeInTheDocument();
+    });
     expect(screen.getByRole('heading', { name: /FileENIAC/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Começar/i })).toBeInTheDocument();
   });
 
-  it('moves to config step when backend is healthy', async () => {
+  it('moves to config step when Comecar is clicked', async () => {
     renderOnboarding();
-    fireEvent.click(screen.getByRole('button', { name: /Começar/i }));
+    const btn = await screen.findByRole('button', { name: /Comecar/i });
+    fireEvent.click(btn);
     await waitFor(() => {
       expect(screen.getByRole('heading', { name: /Conectar Workspace/i })).toBeInTheDocument();
     });
@@ -47,7 +58,8 @@ describe('Onboarding', () => {
 
   it('connects workspace and shows summary', async () => {
     renderOnboarding();
-    fireEvent.click(screen.getByRole('button', { name: /Começar/i }));
+    const btn = await screen.findByRole('button', { name: /Comecar/i });
+    fireEvent.click(btn);
     await waitFor(() => {
       expect(screen.getByRole('heading', { name: /Conectar Workspace/i })).toBeInTheDocument();
     });

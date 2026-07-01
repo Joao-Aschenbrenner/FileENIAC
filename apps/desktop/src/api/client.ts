@@ -18,8 +18,8 @@ export class TimeoutError extends Error {
 
 export async function initApiClient(): Promise<void> {
   try {
-    const info = await invoke<{ base_url: string; token: string }>("get_backend_info");
-    if (info.base_url && info.base_url.trim()) {
+    const info = await invoke<{ base_url: string; token: string; ready: boolean }>("get_backend_info");
+    if (info.ready && info.base_url && info.base_url.trim()) {
       BASE_URL = info.base_url.trim();
     }
   } catch {

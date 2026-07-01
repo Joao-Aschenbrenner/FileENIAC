@@ -5,6 +5,34 @@ All notable changes to FileENIAC will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.6] - 2026-07-01
+
+### Reliability — Sidecar Startup
+
+- **Race condition fixed:** `get_backend_info` IPC now waits (up to 15s) for the sidecar to emit `FILEENIAC_READY` before returning. Previously returned empty port, causing health check failures.
+- **Startup error capture:** Rust now catches sidecar exit code, spawn failures, and missing binary — all stored in `startup_error` and exposed via `get_diagnostics` IPC.
+- **Condvar signaling:** `port_ready` `Arc<Condvar>` wakes the frontend the instant the backend port is known.
+- **Bootstrap log:** `fileeniac-bootstrap.log` records every startup step (sidecar found, spawned, ready, exit, error) without exposing tokens.
+
+### Visual Identity — Professional Deep-Blue Palette
+
+- **Design tokens rewritten:** New CSS custom properties with deep navy (#0B1220), petroleo blue (#0E7490), and subtle teal (#22D3EE) — no saturated purple.
+- **Tailwind config updated:** `eniac-50` through `eniac-950` remapped to the new blue-teal gradient.
+- **Dark mode native:** CSS vars + `data-theme` + `.dark` class all aligned to the new palette.
+- **Onboarding redesigned:** Full-screen deep navy screens with `AppLoadingState` (spinner) and `AppErrorState` (diagnostic buttons) replacing the old gradient/counter UI.
+- **AppLoadingState component:** Professional loading screen with branded spinner on deep navy background.
+- **AppErrorState component:** Error screen with "Tentar novamente" and "Abrir diagnostico" action buttons, plus copyable diagnostic details.
+- **Loader/ErrorState updated:** Text colors adjusted for new palette.
+- **ErrorBoundary updated:** Indigo replaced with eniac-600 teal buttons.
+
+### Jargon Removal
+
+- **"Backend"** replaced with "servico" or "ambiente" across Onboarding, SessionContext, and error messages.
+- **"Inicializando backend... (N/15)"** replaced with "Configurando ambiente...".
+- **"Backend offline"** replaced with "Servico indisponivel".
+- **"Workspace Bootstrap"** renamed to "Configuracao do Ambiente".
+- **Diagnostic buttons** use plain language: "Tentar novamente" / "Abrir diagnostico" / "Copiar detalhes".
+
 ## [0.1.5] - 2026-06-30
 
 ### Desktop Self-Contained Backend

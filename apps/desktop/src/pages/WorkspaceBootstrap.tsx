@@ -63,8 +63,8 @@ export default function WorkspaceBootstrap() {
   return (
     <div className="max-w-xl mx-auto mt-8">
       <div className="text-center mb-8">
-        <h2 className="text-2xl font-bold text-gray-800">Workspace Bootstrap</h2>
-        <p className="text-sm text-gray-500 mt-1">Configure seu ambiente do zero em poucos passos</p>
+        <h2 className="text-2xl font-bold text-gray-800">Configuracao do Ambiente</h2>
+        <p className="text-sm text-gray-500 mt-1">Configure seu ambiente em poucos passos</p>
       </div>
 
       <div className="space-y-3 mb-8">

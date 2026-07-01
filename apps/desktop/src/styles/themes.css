@@ -1,91 +1,83 @@
 /**
- * FileENIAC Design Tokens — Futuristic Professional Theme
+ * FileENIAC Design Tokens — Professional Deep-Blue Palette
  *
- * Based on ENIAC-SENTINEL patterns adapted for FileENIAC:
- * - Neutral dark base (#0a0a0f) with indigo accent (#6366f1)
- * - Clean surface hierarchy (base → surface → elevated)
- * - Semantic color system for status/feedback
+ * Core palette:
+ *   Deep navy base   #0B1220
+ *   Petroleo blue     #0E7490 / #0891B2
+ *   Subtle teal/cyan  #22D3EE / #06B6D4
+ *   Warm accent       #F0F4F8 (light surfaces)
  *
- * Usage in components:
- *   bg-[var(--bg-surface)]    → card backgrounds
- *   text-[var(--text-primary)] → headings, important text
- *   text-[var(--text-muted)]   → captions, metadata
- *   border-[var(--border-subtle)] → dividers, subtle borders
- *   bg-[var(--accent)]         → primary buttons, active states
+ * No saturated purple. Professional, calm, trustworthy.
  */
 
 :root,
 [data-theme="light"] {
-  /* ── Background ─────────────────────────────────────── */
-  --bg-base:     #fafaf9;   /* page background */
-  --bg-surface: #ffffff;   /* cards, panels */
-  --bg-elevated: #f5f5f7;  /* modals, dropdowns, hover */
+  --bg-base:     #F0F4F8;
+  --bg-surface:  #FFFFFF;
+  --bg-elevated: #E8EDF2;
 
-  /* ── Border ──────────────────────────────────────────── */
-  --border-subtle: #e5e5e9;   /* dividers, table lines */
-  --border-strong: #c5c5cc;  /* focused inputs, strong separators */
+  --border-subtle: #D1DAE3;
+  --border-strong: #9BB0C4;
 
-  /* ── Text ────────────────────────────────────────────── */
-  --text-primary:   #0a0a0f;   /* headings, key content */
-  --text-secondary: #4a4a52;   /* body text, descriptions */
-  --text-muted:     #8a8a92;   /* captions, timestamps, placeholders */
+  --text-primary:   #0B1220;
+  --text-secondary: #3B4F63;
+  --text-muted:     #7A8FA3;
 
-  /* ── Accent (Brand — indigo) ─────────────────────────── */
-  --accent:       #6366f1;   /* primary actions, active nav, links */
-  --accent-hover: #4f46e5;  /* hover state for accent */
-  --accent-soft:  #eef2ff;  /* accent background tint */
+  --accent:       #0891B2;
+  --accent-hover: #0E7490;
+  --accent-soft:  #E0F5FA;
 
-  /* ── Status ─────────────────────────────────────────── */
-  --status-online:  #22d3ee;  /* cyan — active sessions, live status */
-  --status-success: #10b981; /* emerald — success, imported, done */
-  --status-warning: #fbbf24; /* amber — warnings, pending */
-  --status-error:   #f43f5e; /* rose — errors, failed, critical */
+  --deep-navy:    #0B1220;
+  --navy-mid:     #162032;
+  --petroleo:     #0E7490;
+  --teal:         #06B6D4;
 
-  /* ── Sidebar ────────────────────────────────────────── */
-  --sidebar-bg:    #ffffff;
-  --sidebar-border: #e5e5e9;
-  --sidebar-text:  #0a0a0f;
-  --sidebar-muted: #8a8a92;
-  --sidebar-active-bg: #eef2ff;
-  --sidebar-active-text: #4f46e5;
+  --status-online:  #22D3EE;
+  --status-success: #10B981;
+  --status-warning: #F59E0B;
+  --status-error:   #EF4444;
+
+  --sidebar-bg:         #FFFFFF;
+  --sidebar-border:     #D1DAE3;
+  --sidebar-text:       #0B1220;
+  --sidebar-muted:      #7A8FA3;
+  --sidebar-active-bg:  #E0F5FA;
+  --sidebar-active-text:#0891B2;
 }
 
 [data-theme="dark"] {
-  /* ── Background ─────────────────────────────────────── */
-  --bg-base:     #0a0a0f;   /* page background — near-black blue-tinted */
-  --bg-surface: #15151b;   /* cards, panels */
-  --bg-elevated: #1c1c24;  /* modals, dropdowns, hover */
+  --bg-base:     #0B1220;
+  --bg-surface:  #162032;
+  --bg-elevated: #1E2D42;
 
-  /* ── Border ──────────────────────────────────────────── */
-  --border-subtle: #25252e;   /* dividers, table lines */
-  --border-strong: #35353f;   /* focused inputs, strong separators */
+  --border-subtle: #253448;
+  --border-strong: #3B5168;
 
-  /* ── Text ────────────────────────────────────────────── */
-  --text-primary:   #f0f0f5;   /* headings, key content */
-  --text-secondary: #a5a5b0;   /* body text, descriptions */
-  --text-muted:     #6b6b75;   /* captions, timestamps, placeholders */
+  --text-primary:   #F0F4F8;
+  --text-secondary: #A8BCCC;
+  --text-muted:     #6A8099;
 
-  /* ── Accent (Brand — indigo) ─────────────────────────── */
-  --accent:       #6366f1;   /* primary actions, active nav, links */
-  --accent-hover: #818cf8;  /* hover state for accent */
-  --accent-soft:  #1e1b4b;   /* accent background tint (dark mode) */
+  --accent:       #22D3EE;
+  --accent-hover: #06B6D4;
+  --accent-soft:  #0E3A4A;
 
-  /* ── Status ─────────────────────────────────────────── */
-  --status-online:  #22d3ee;  /* cyan — active sessions, live status */
-  --status-success: #10b981; /* emerald — success, imported, done */
-  --status-warning: #fbbf24; /* amber — warnings, pending */
-  --status-error:   #f43f5e; /* rose — errors, failed, critical */
+  --deep-navy:    #0B1220;
+  --navy-mid:     #162032;
+  --petroleo:     #0891B2;
+  --teal:         #22D3EE;
 
-  /* ── Sidebar ────────────────────────────────────────── */
-  --sidebar-bg:    #15151b;
-  --sidebar-border: #25252e;
-  --sidebar-text:  #f0f0f5;
-  --sidebar-muted: #6b6b75;
-  --sidebar-active-bg: #1e1b4b;
-  --sidebar-active-text: #818cf8;
+  --status-online:  #22D3EE;
+  --status-success: #10B981;
+  --status-warning: #F59E0B;
+  --status-error:   #EF4444;
+
+  --sidebar-bg:         #162032;
+  --sidebar-border:     #253448;
+  --sidebar-text:       #F0F4F8;
+  --sidebar-muted:      #6A8099;
+  --sidebar-active-bg:  #0E3A4A;
+  --sidebar-active-text:#22D3EE;
 }
-
-/* ── Utility classes using CSS vars ─────────────────────────────────── */
 
 .text-primary   { color: var(--text-primary); }
 .text-secondary { color: var(--text-secondary); }
@@ -99,8 +91,15 @@
 .border-strong { border-color: var(--border-strong); }
 
 .text-accent    { color: var(--accent); }
-.bg-accent     { background-color: var(--accent); }
+.bg-accent      { background-color: var(--accent); }
 .bg-accent-soft { background-color: var(--accent-soft); }
+
+.bg-deep-navy { background-color: var(--deep-navy); }
+.bg-navy-mid  { background-color: var(--navy-mid); }
+.text-petroleo { color: var(--petroleo); }
+.bg-petroleo  { background-color: var(--petroleo); }
+.text-teal    { color: var(--teal); }
+.bg-teal      { background-color: var(--teal); }
 
 .text-online  { color: var(--status-online); }
 .text-success { color: var(--status-success); }
@@ -112,13 +111,11 @@
 .bg-warning { background-color: var(--status-warning); }
 .bg-error   { background-color: var(--status-error); }
 
-/* ── Focus ring (accessibility) ───────────────────────────────────── */
 .focus-ring {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
 
-/* ── Scrollbar styling (WebKit) ───────────────────────────────────── */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;

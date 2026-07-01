@@ -1,8 +1,11 @@
 // SPDX-License-Identifier: MIT
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { invoke } from "@tauri-apps/api/core";
 import { getWorkspace, checkHealth } from "../api/client";
 import { open } from "@tauri-apps/plugin-dialog";
+import { AppLoadingState } from "../components/AppLoadingState";
+import { AppErrorState } from "../components/AppErrorState";
 
 async function pickFolder(): Promise<string | null> {
   try {
@@ -13,33 +16,83 @@ async function pickFolder(): Promise<string | null> {
   }
 }
 
+type StartupStatus = "waiting" | "ready" | "failed";
+
 export default function Onboarding() {
   const navigate = useNavigate();
   const [step, setStep] = useState<"welcome" | "config" | "ready">("welcome");
   const [wsPath, setWsPath] = useState("");
   const [error, setError] = useState("");
   const [wsInfo, setWsInfo] = useState<any>(null);
-  const [checking, setChecking] = useState(false);
   const [connecting, setConnecting] = useState(false);
+  const [startupStatus, setStartupStatus] = useState<StartupStatus>("waiting");
+  const [startupError, setStartupError] = useState("");
 
-  const [healthRetries, setHealthRetries] = useState(0);
-  const [maxRetries] = useState(15);
+  useEffect(() => {
+    let cancelled = false;
 
-  async function handleCheckBackend() {
-    setChecking(true);
-    setError("");
-    for (let i = 0; i < maxRetries; i++) {
-      setHealthRetries(i + 1);
-      const ok = await checkHealth();
-      if (ok) {
-        setStep("config");
-        setChecking(false);
-        return;
+    async function waitForBackend() {
+      try {
+        const info = await invoke<{ base_url: string; token: string; ready: boolean }>("get_backend_info");
+
+        if (cancelled) return;
+
+        if (!info.ready || !info.base_url) {
+          const diag = await invoke<{ startup_error: { message: string } | null }>("get_diagnostics").catch(() => null);
+          const msg = diag?.startup_error?.message || "Nao foi possivel configurar o ambiente automaticamente.";
+          setStartupStatus("failed");
+          setStartupError(msg);
+          return;
+        }
+
+        setStartupStatus("ready");
+
+        let retries = 0;
+        while (retries < 15) {
+          if (cancelled) return;
+          const ok = await checkHealth();
+          if (ok) return;
+          await new Promise((r) => setTimeout(r, 1000));
+          retries++;
+        }
+
+        setStartupStatus("failed");
+        setStartupError("O servico nao respondeu a tempo. Tente novamente.");
+      } catch {
+        if (!cancelled) {
+          setStartupStatus("failed");
+          setStartupError("Erro ao verificar o ambiente.");
+        }
       }
-      await new Promise((r) => setTimeout(r, 1000));
     }
-    setError("Não foi possível iniciar o backend local. Tente novamente.");
-    setChecking(false);
+
+    waitForBackend();
+    return () => { cancelled = true; };
+  }, []);
+
+  async function handleRetryStartup() {
+    setStartupStatus("waiting");
+    setStartupError("");
+    setError("");
+
+    try {
+      const info = await invoke<{ base_url: string; token: string; ready: boolean }>("get_backend_info");
+      if (info.ready && info.base_url) {
+        setStartupStatus("ready");
+        let retries = 0;
+        while (retries < 15) {
+          const ok = await checkHealth();
+          if (ok) return;
+          await new Promise((r) => setTimeout(r, 1000));
+          retries++;
+        }
+      }
+      setStartupStatus("failed");
+      setStartupError("O servico nao respondeu a tempo.");
+    } catch {
+      setStartupStatus("failed");
+      setStartupError("Erro ao verificar o ambiente.");
+    }
   }
 
   async function handleConnect() {
@@ -54,7 +107,7 @@ export default function Onboarding() {
       setWsInfo(info);
       setStep("ready");
     } catch (e: any) {
-      setError(e.message);
+      setError(e.message || "Nao foi possivel conectar ao workspace informado.");
     }
     setConnecting(false);
   }
@@ -63,26 +116,36 @@ export default function Onboarding() {
     navigate("/dashboard");
   }
 
+  if (startupStatus === "waiting") {
+    return <AppLoadingState message="Configurando ambiente..." />;
+  }
+
+  if (startupStatus === "failed") {
+    return (
+      <AppErrorState
+        message={startupError}
+        onRetry={handleRetryStartup}
+      />
+    );
+  }
+
   if (step === "welcome") {
     return (
-      <div className="flex h-screen items-center justify-center bg-gradient-to-br from-eniac-900 to-eniac-700">
+      <div className="fixed inset-0 bg-eniac-950 flex items-center justify-center">
         <div className="text-center max-w-md px-8">
-          <h1 className="text-4xl font-bold text-white mb-2">FileENIAC</h1>
-          <p className="text-eniac-200 mb-8">Desktop</p>
-          <p className="text-white/80 mb-8 text-sm leading-relaxed">
-            Gerencie seus projetos, deploys FTPS e mantenha seus workspaces
-            organizados — tudo do seu desktop.
-          </p>
+          <div className="mx-auto mb-6 w-16 h-16 rounded-2xl bg-eniac-900/60 border border-eniac-700/30 flex items-center justify-center">
+            <svg className="h-8 w-8 text-eniac-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+            </svg>
+          </div>
+          <h1 className="text-3xl font-bold text-white mb-2 tracking-tight">FileENIAC</h1>
+          <p className="text-eniac-400 mb-8 text-sm">Gerencie projetos e deploys do seu desktop</p>
           <button
-            onClick={handleCheckBackend}
-            disabled={checking}
-            className="w-full py-3 px-6 bg-white text-eniac-900 rounded-lg font-semibold hover:bg-eniac-100 disabled:opacity-60 transition-colors"
+            onClick={() => setStep("config")}
+            className="w-full py-3 px-6 bg-eniac-600 text-white rounded-lg font-semibold hover:bg-eniac-700 transition-colors"
           >
-            {checking ? `Inicializando backend... (${healthRetries}/${maxRetries})` : "Começar"}
+            Comecar
           </button>
-          {error && (
-            <p className="mt-4 text-red-300 text-sm">{error}</p>
-          )}
         </div>
       </div>
     );
@@ -90,15 +153,15 @@ export default function Onboarding() {
 
   if (step === "config") {
     return (
-      <div className="flex h-screen items-center justify-center bg-gradient-to-br from-eniac-900 to-eniac-700">
-        <div className="bg-white rounded-xl shadow-2xl p-8 w-full max-w-md">
-          <h2 className="text-xl font-bold text-gray-800 mb-2">
+      <div className="fixed inset-0 bg-eniac-950 flex items-center justify-center">
+        <div className="bg-eniac-900/80 border border-eniac-700/30 rounded-2xl shadow-2xl p-8 w-full max-w-md">
+          <h2 className="text-xl font-bold text-white mb-2">
             Conectar Workspace
           </h2>
-          <p className="text-sm text-gray-500 mb-6">
-            Informe o caminho do workspace FileENIAC que deseja gerenciar.
+          <p className="text-sm text-eniac-300 mb-6">
+            Informe o caminho do workspace que deseja gerenciar.
           </p>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-eniac-200 mb-1">
             Caminho do Workspace
           </label>
           <div className="flex gap-2">
@@ -107,30 +170,30 @@ export default function Onboarding() {
               value={wsPath}
               onChange={(e) => setWsPath(e.target.value)}
               placeholder="C:/projetos/meu-workspace"
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-eniac-500 focus:border-transparent"
+              className="flex-1 px-3 py-2.5 bg-eniac-950/60 border border-eniac-700/40 rounded-lg text-sm text-white placeholder-eniac-500 focus:outline-none focus:ring-2 focus:ring-eniac-500 focus:border-transparent"
             />
             <button
               type="button"
               onClick={async () => { const p = await pickFolder(); if (p) setWsPath(p); }}
-              className="px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+              className="px-3 py-2.5 border border-eniac-700/40 rounded-lg text-sm font-medium text-eniac-200 hover:bg-eniac-800/60 transition-colors"
             >
               Procurar
             </button>
           </div>
           {error && (
-            <p className="mt-2 text-red-600 text-sm">{error}</p>
+            <p className="mt-2 text-red-400 text-sm">{error}</p>
           )}
           <div className="flex gap-3 mt-6">
             <button
               onClick={() => setStep("welcome")}
-              className="flex-1 py-2 px-4 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+              className="flex-1 py-2.5 px-4 border border-eniac-700/40 rounded-lg text-sm font-medium text-eniac-200 hover:bg-eniac-800/60 transition-colors"
             >
               Voltar
             </button>
             <button
               onClick={handleConnect}
               disabled={connecting}
-              className="flex-1 py-2 px-4 bg-eniac-600 text-white rounded-lg text-sm font-semibold hover:bg-eniac-700 disabled:opacity-60 transition-colors"
+              className="flex-1 py-2.5 px-4 bg-eniac-600 text-white rounded-lg text-sm font-semibold hover:bg-eniac-700 disabled:opacity-60 transition-colors"
             >
               {connecting ? "Conectando..." : "Conectar"}
             </button>
@@ -141,28 +204,32 @@ export default function Onboarding() {
   }
 
   return (
-    <div className="flex h-screen items-center justify-center bg-gradient-to-br from-eniac-900 to-eniac-700">
-      <div className="bg-white rounded-xl shadow-2xl p-8 w-full max-w-md text-center">
-        <div className="text-4xl mb-4">✅</div>
-        <h2 className="text-xl font-bold text-gray-800 mb-2">
+    <div className="fixed inset-0 bg-eniac-950 flex items-center justify-center">
+      <div className="bg-eniac-900/80 border border-eniac-700/30 rounded-2xl shadow-2xl p-8 w-full max-w-md text-center">
+        <div className="mx-auto mb-4 w-16 h-16 rounded-2xl bg-emerald-900/30 border border-emerald-700/30 flex items-center justify-center">
+          <svg className="h-8 w-8 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+        <h2 className="text-xl font-bold text-white mb-2">
           Workspace Conectado
         </h2>
-        <div className="text-left bg-gray-50 rounded-lg p-4 mb-6 text-sm space-y-1">
+        <div className="text-left bg-eniac-950/60 rounded-lg p-4 mb-6 text-sm space-y-1 border border-eniac-700/20">
           <p>
-            <span className="font-medium text-gray-600">Nome:</span>{" "}
-            {wsInfo?.name}
+            <span className="font-medium text-eniac-300">Nome:</span>{" "}
+            <span className="text-white">{wsInfo?.name}</span>
           </p>
           <p>
-            <span className="font-medium text-gray-600">Projetos:</span>{" "}
-            {wsInfo?.projects}
+            <span className="font-medium text-eniac-300">Projetos:</span>{" "}
+            <span className="text-white">{wsInfo?.projects}</span>
           </p>
           <p>
-            <span className="font-medium text-gray-600">Servidores:</span>{" "}
-            {wsInfo?.servers}
+            <span className="font-medium text-eniac-300">Servidores:</span>{" "}
+            <span className="text-white">{wsInfo?.servers}</span>
           </p>
           <p>
-            <span className="font-medium text-gray-600">Deploys:</span>{" "}
-            {wsInfo?.deploys}
+            <span className="font-medium text-eniac-300">Deploys:</span>{" "}
+            <span className="text-white">{wsInfo?.deploys}</span>
           </p>
         </div>
         <button

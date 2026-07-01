@@ -44,7 +44,7 @@ export default function SessionSelector() {
   if (loading && sessions.length === 0) return <Loader text="Carregando sessões..." />;
 
   return (
-    <div className="flex h-screen items-center justify-center bg-gradient-to-br from-eniac-900 to-eniac-700">
+    <div className="flex h-screen items-center justify-center bg-gradient-to-br from-eniac-950 to-eniac-900">
       <div className="w-full max-w-lg px-8">
         <div className="text-center mb-10">
           <h1 className="text-4xl font-bold text-white mb-2">FileENIAC</h1>

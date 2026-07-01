@@ -51,7 +51,7 @@ const SessionContext = createContext<SessionContextValue>({
 
 function parseError(err: unknown): string {
   if (err instanceof TypeError && err.message === "Failed to fetch") {
-    return "Não foi possível conectar ao backend. Verifique se o servidor está rodando.";
+    return "Nao foi possivel conectar ao servico. Tente reiniciar o aplicativo.";
   }
   if (err instanceof Error) return err.message;
   return "Erro desconhecido";
@@ -81,7 +81,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       if (generation !== refreshGenerationRef.current) return;
       setBackendOnline(ok);
       if (!ok) {
-        setError("Backend offline. Tente reiniciar o aplicativo.");
+        setError("Servico indisponivel. Tente reiniciar o aplicativo.");
         setSessions([]);
         setActiveSession(null);
         setWorkspacePath("");

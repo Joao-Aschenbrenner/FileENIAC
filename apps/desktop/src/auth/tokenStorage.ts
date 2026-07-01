@@ -67,8 +67,8 @@ async function _doResolve(): Promise<string | null> {
   if (token) return token;
 
   try {
-    const info = await invoke<{ base_url: string; token: string }>("get_backend_info");
-    if (info.token && info.token.trim()) {
+    const info = await invoke<{ base_url: string; token: string; ready: boolean }>("get_backend_info");
+    if (info.ready && info.token && info.token.trim()) {
       _baseUrl = info.base_url;
       storeToken(info.token.trim());
       return info.token.trim();
@@ -95,8 +95,8 @@ export async function initApiClientBase(): Promise<void> {
   }
 
   try {
-    const info = await invoke<{ base_url: string; token: string }>("get_backend_info");
-    if (info.base_url && info.base_url.trim()) {
+    const info = await invoke<{ base_url: string; token: string; ready: boolean }>("get_backend_info");
+    if (info.ready && info.base_url && info.base_url.trim()) {
       _baseUrl = info.base_url.trim();
       localStorage.setItem(PORT_STORAGE_KEY, info.base_url.replace(/.*:(\d+)\/api/, "$1"));
       if (info.token && info.token.trim()) {

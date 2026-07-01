@@ -21,7 +21,7 @@ describe('ErrorBoundary', () => {
     );
     expect(screen.getByRole('heading', { name: /erro inesperado/i })).toBeInTheDocument();
     expect(screen.getByText(/disk failure/)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /voltar ao início/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /voltar ao inicio/i })).toBeInTheDocument();
   });
 
   it('renders the fallback copy when the error message is empty', () => {
@@ -46,7 +46,7 @@ describe('ErrorBoundary', () => {
       </ErrorBoundary>,
     );
 
-    fireEvent.click(screen.getByRole('button', { name: /voltar ao início/i }));
+    fireEvent.click(screen.getByRole('button', { name: /voltar ao inicio/i }));
     expect(window.location.href).toBe('/');
 
     Object.defineProperty(window, 'location', {
