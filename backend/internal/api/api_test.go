@@ -87,6 +87,38 @@ func TestWorkspace_WithContext(t *testing.T) {
 	if body["name"] != "APITest" {
 		t.Errorf("expected APITest, got %v", body["name"])
 	}
+	workspace.Active().DB.Close()
+}
+
+func TestWorkspace_PrepareCreatesWorkspaceInSelectedFolder(t *testing.T) {
+	tmpDir := t.TempDir()
+	selected := filepath.Join(tmpDir, "ENIAC_SYSTEMS")
+
+	srv := New(":0")
+	payload := map[string]string{"path": selected}
+	body, _ := json.Marshal(payload)
+	req := httptest.NewRequest("POST", "/api/workspace", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+
+	srv.mux.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d: %s", w.Code, w.Body.String())
+	}
+	if _, err := os.Stat(filepath.Join(selected, ".eniac", "config.toml")); err != nil {
+		t.Fatalf("expected workspace config to be created: %v", err)
+	}
+
+	var resp map[string]interface{}
+	json.NewDecoder(w.Body).Decode(&resp)
+	if resp["name"] != "ENIAC_SYSTEMS" {
+		t.Fatalf("expected default workspace name ENIAC_SYSTEMS, got %v", resp["name"])
+	}
+	if resp["path"] != selected {
+		t.Fatalf("expected workspace path %s, got %v", selected, resp["path"])
+	}
+	workspace.Active().DB.Close()
 }
 
 func TestProjects_CRUD(t *testing.T) {

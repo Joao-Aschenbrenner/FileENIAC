@@ -2,7 +2,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import { BackendInfo, configureBackendAuth, resolveApiToken } from "../auth/tokenStorage";
 import { ApiError } from "./errors";
-import { STORAGE_KEYS, storageGet } from "./storage";
+import { STORAGE_KEYS, storageGet, storageSet } from "./storage";
 
 let BASE_URL = "http://localhost:8080/api";
 
@@ -158,6 +158,14 @@ export async function heartbeat(): Promise<void> {
 
 export async function getWorkspace(wsPath: string): Promise<any> {
   return get(`/workspace?workspace=${encodeURIComponent(wsPath)}`);
+}
+
+export async function prepareWorkspaceLocation(basePath: string): Promise<any> {
+  const info = await post("/workspace", { path: basePath });
+  if (info?.path) {
+    storageSet(STORAGE_KEYS.workspacePath, info.path);
+  }
+  return info;
 }
 
 export async function listProjects(wsPath: string): Promise<any[]> {

@@ -19,8 +19,9 @@ vi.mock('@tauri-apps/plugin-dialog', () => ({
 vi.mock('../../api/client', () => ({
   configureApiClientFromBackendInfo: vi.fn().mockReturnValue(true),
   checkHealth: vi.fn().mockResolvedValue(true),
-  getWorkspace: vi.fn().mockResolvedValue({
+  prepareWorkspaceLocation: vi.fn().mockResolvedValue({
     name: 'mock-workspace',
+    path: '/mock/workspace',
     projects: 2,
     servers: 1,
     deploys: 0,
@@ -53,24 +54,24 @@ describe('Onboarding', () => {
     const btn = await screen.findByRole('button', { name: /Comecar/i });
     fireEvent.click(btn);
     await waitFor(() => {
-      expect(screen.getByRole('heading', { name: /Conectar Workspace/i })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: /Definir Local de Trabalho/i })).toBeInTheDocument();
     });
   });
 
-  it('connects workspace and shows summary', async () => {
+  it('prepares workspace location and shows summary', async () => {
     renderOnboarding();
     const btn = await screen.findByRole('button', { name: /Comecar/i });
     fireEvent.click(btn);
     await waitFor(() => {
-      expect(screen.getByRole('heading', { name: /Conectar Workspace/i })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: /Definir Local de Trabalho/i })).toBeInTheDocument();
     });
 
-    const input = screen.getByPlaceholderText(/C:\/projetos\/meu-workspace/);
+    const input = screen.getByPlaceholderText(/C:\/projetos/);
     fireEvent.change(input, { target: { value: '/mock/workspace' } });
 
-    fireEvent.click(screen.getByRole('button', { name: /Conectar/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Preparar/i }));
     await waitFor(() => {
-      expect(screen.getByRole('heading', { name: /Workspace Conectado/i })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: /Workspace Preparado/i })).toBeInTheDocument();
     });
     expect(screen.getByText(/mock-workspace/)).toBeInTheDocument();
   });

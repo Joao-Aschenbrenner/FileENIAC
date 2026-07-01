@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { checkHealth, listProjects } from '../client';
+import { checkHealth, listProjects, prepareWorkspaceLocation } from '../client';
 import { clearTokenStorageState } from '../../auth/tokenStorage';
 
 const mockFetch = vi.fn();
@@ -70,5 +70,29 @@ describe('listProjects', () => {
       return undefined;
     });
     await expect(listProjects('/ws')).rejects.toThrow('Internal error');
+  });
+});
+
+describe('prepareWorkspaceLocation', () => {
+  it('posts selected allocation path and stores returned workspace path', async () => {
+    localStorage.setItem('eniac_api_token', 'unit-test-token');
+    setupFetch(async (url: string) => {
+      if (url === 'http://localhost:8080/api/workspace') {
+        return mockResponse({ name: 'ENIAC_SYSTEMS', path: 'C:/Users/USUARIO/Desktop/PROJETOS/ENIAC_SYSTEMS', projects: 0 });
+      }
+      return undefined;
+    });
+
+    const result = await prepareWorkspaceLocation('C:/Users/USUARIO/Desktop/PROJETOS/ENIAC_SYSTEMS');
+
+    expect(result.name).toBe('ENIAC_SYSTEMS');
+    expect(localStorage.getItem('eniac_ws_path')).toBe('C:/Users/USUARIO/Desktop/PROJETOS/ENIAC_SYSTEMS');
+    expect(mockFetch).toHaveBeenCalledWith(
+      'http://localhost:8080/api/workspace',
+      expect.objectContaining({
+        method: 'POST',
+        body: JSON.stringify({ path: 'C:/Users/USUARIO/Desktop/PROJETOS/ENIAC_SYSTEMS' }),
+      }),
+    );
   });
 });

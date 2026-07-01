@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { invoke } from "@tauri-apps/api/core";
-import { getWorkspace, checkHealth, configureApiClientFromBackendInfo } from "../api/client";
+import { prepareWorkspaceLocation, checkHealth, configureApiClientFromBackendInfo } from "../api/client";
 import type { BackendInfo } from "../auth/tokenStorage";
 import { open } from "@tauri-apps/plugin-dialog";
 import { AppLoadingState } from "../components/AppLoadingState";
@@ -100,17 +100,17 @@ export default function Onboarding() {
 
   async function handleConnect() {
     if (!wsPath.trim()) {
-      setError("Informe o caminho do workspace");
+      setError("Informe a pasta onde os workspaces serao alocados");
       return;
     }
     setConnecting(true);
     setError("");
     try {
-      const info = await getWorkspace(wsPath.trim());
+      const info = await prepareWorkspaceLocation(wsPath.trim());
       setWsInfo(info);
       setStep("ready");
     } catch (e: any) {
-      setError(e.message || "Nao foi possivel conectar ao workspace informado.");
+      setError(e.message || "Nao foi possivel preparar o local informado.");
     }
     setConnecting(false);
   }
@@ -159,20 +159,20 @@ export default function Onboarding() {
       <div className="fixed inset-0 bg-eniac-950 flex items-center justify-center">
         <div className="bg-eniac-900/80 border border-eniac-700/30 rounded-2xl shadow-2xl p-8 w-full max-w-md">
           <h2 className="text-xl font-bold text-white mb-2">
-            Conectar Workspace
+            Definir Local de Trabalho
           </h2>
           <p className="text-sm text-eniac-300 mb-6">
-            Informe o caminho do workspace que deseja gerenciar.
+            Escolha a pasta onde o FileENIAC vai alocar seus workspaces e projetos.
           </p>
           <label className="block text-sm font-medium text-eniac-200 mb-1">
-            Caminho do Workspace
+            Pasta de alocacao
           </label>
           <div className="flex gap-2">
             <input
               type="text"
               value={wsPath}
               onChange={(e) => setWsPath(e.target.value)}
-              placeholder="C:/projetos/meu-workspace"
+              placeholder="C:/projetos"
               className="flex-1 px-3 py-2.5 bg-eniac-950/60 border border-eniac-700/40 rounded-lg text-sm text-white placeholder-eniac-500 focus:outline-none focus:ring-2 focus:ring-eniac-500 focus:border-transparent"
             />
             <button
@@ -198,7 +198,7 @@ export default function Onboarding() {
               disabled={connecting}
               className="flex-1 py-2.5 px-4 bg-eniac-600 text-white rounded-lg text-sm font-semibold hover:bg-eniac-700 disabled:opacity-60 transition-colors"
             >
-              {connecting ? "Conectando..." : "Conectar"}
+              {connecting ? "Preparando..." : "Preparar"}
             </button>
           </div>
         </div>
@@ -215,7 +215,7 @@ export default function Onboarding() {
           </svg>
         </div>
         <h2 className="text-xl font-bold text-white mb-2">
-          Workspace Conectado
+          Workspace Preparado
         </h2>
         <div className="text-left bg-eniac-950/60 rounded-lg p-4 mb-6 text-sm space-y-1 border border-eniac-700/20">
           <p>

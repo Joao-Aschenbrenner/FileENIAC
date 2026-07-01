@@ -5,6 +5,16 @@ All notable changes to FileENIAC will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.8] - 2026-07-01
+
+### Fixed — Workspace Allocation Onboarding
+
+- **Workspace setup semantics fixed:** onboarding now asks for a folder where FileENIAC will allocate/create the workspace, not for a pre-existing `.eniac` workspace.
+- **Create-or-open workspace endpoint:** `POST /api/workspace` now opens an existing workspace when `.eniac` exists, or initializes `.eniac` in the selected folder when it does not.
+- **Persistent workspace path:** desktop stores the prepared workspace path in `eniac_ws_path` for subsequent project/deploy screens.
+- **UX copy updated:** "Conectar Workspace" became "Definir Local de Trabalho", with actions focused on preparing the allocation folder.
+- **Tests added:** backend validates workspace creation in a plain selected folder; frontend validates the new prepare flow and persisted path.
+
 ## [0.1.7] - 2026-07-01
 
 ### Fixed — Installed Desktop Startup

@@ -80,7 +80,7 @@ func (s *Server) SetBackgroundRunner(bg *bghealth.BackgroundRunner) {
 func (s *Server) routes() {
 	s.mux.HandleFunc("/api/health", s.handleHealth())
 	s.mux.HandleFunc("/api/_handshake/token", s.handleHandshakeToken())
-	s.mux.HandleFunc("/api/workspace", s.requireWorkspace(s.handleWorkspace()))
+	s.mux.HandleFunc("/api/workspace", s.handleWorkspace())
 	s.mux.HandleFunc("/api/projects", s.requireWorkspace(s.handleProjects()))
 	s.mux.HandleFunc("/api/projects/", s.requireWorkspace(s.handleProjectByID()))
 	s.mux.HandleFunc("/api/servers", s.requireWorkspace(s.handleServers()))
@@ -271,16 +271,74 @@ func (s *Server) requireWorkspace(next http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
-// GET /workspace
+type workspaceRequest struct {
+	Path        string `json:"path"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+}
+
+// GET/POST /workspace
 func (s *Server) handleWorkspace() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodGet:
+			path := strings.TrimSpace(r.URL.Query().Get("workspace"))
+			if path != "" {
+				if _, err := workspace.Open(path); err != nil {
+					respondError(w, http.StatusNotFound, fmt.Sprintf("workspace not found: %v", err))
+					return
+				}
+			}
+		case http.MethodPost:
+			var req workspaceRequest
+			if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+				respondError(w, http.StatusBadRequest, "invalid JSON: "+err.Error())
+				return
+			}
+			if err := prepareWorkspace(req); err != nil {
+				respondError(w, http.StatusBadRequest, err.Error())
+				return
+			}
+		default:
+			respondError(w, http.StatusMethodNotAllowed, "method not allowed")
+			return
+		}
+
 		ctx := workspace.Active()
 		if ctx == nil {
 			respondError(w, http.StatusNotFound, "no active workspace")
 			return
 		}
+
 		respond(w, http.StatusOK, ctx.Workspace.Status())
 	}
+}
+
+func prepareWorkspace(req workspaceRequest) error {
+	path := strings.TrimSpace(req.Path)
+	if path == "" {
+		return fmt.Errorf("informe a pasta onde os workspaces serao alocados")
+	}
+
+	path = filepath.Clean(path)
+	name := strings.TrimSpace(req.Name)
+	if name == "" {
+		name = filepath.Base(path)
+	}
+	if name == "." || name == string(filepath.Separator) || name == "" {
+		name = "Workspace"
+	}
+
+	wsDir := filepath.Join(path, ".eniac")
+	if _, err := os.Stat(wsDir); err == nil {
+		_, err = workspace.Open(path)
+		return err
+	} else if !os.IsNotExist(err) {
+		return fmt.Errorf("nao foi possivel verificar a pasta do workspace: %w", err)
+	}
+
+	_, err := workspace.Init(name, path, strings.TrimSpace(req.Description))
+	return err
 }
 
 // GET/POST /projects

@@ -35,7 +35,7 @@ export function AppErrorState({ title, message, onRetry }: AppErrorStateProps) {
 
   async function copyDetails() {
     const lines = [
-      `FileENIAC v0.1.7 - Diagnostico`,
+      `FileENIAC v0.1.8 - Diagnostico`,
       ``,
       `Erro: ${message}`,
     ];
