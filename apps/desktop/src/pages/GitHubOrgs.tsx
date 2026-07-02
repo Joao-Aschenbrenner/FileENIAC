@@ -56,10 +56,16 @@ export default function GitHubOrgs() {
           ))}
         </div>
 
-        <button onClick={() => navigate("/github/repos")}
-          className="w-full py-2 text-sm text-eniac-600 hover:text-eniac-800 font-medium">
-          Ver meus repositórios pessoais
-        </button>
+        <div className="flex gap-3">
+          <button onClick={() => navigate("/bootstrap")}
+            className="flex-1 py-2.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+            Voltar
+          </button>
+          <button onClick={() => navigate("/github/repos")}
+            className="flex-1 py-2.5 border border-gray-300 rounded-lg text-sm font-medium text-eniac-600 hover:bg-eniac-50 transition-colors">
+            Ver meus repositórios pessoais
+          </button>
+        </div>
       </div>
     </div>
   );

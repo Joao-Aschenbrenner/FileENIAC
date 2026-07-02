@@ -5,6 +5,26 @@ All notable changes to FileENIAC will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.12] - 2026-07-02
+
+### Fixed — GitHub Import Navigation State
+
+- **GitHub import back navigation from personal repos:** Clicking "Voltar" in "Meus Repositórios" now correctly navigates back to organization selection (`/github/orgs`) instead of workspace setup (`/bootstrap`).
+- **GitHub import back navigation from org repos:** Clicking "Voltar" in organization repository list also navigates back to organization selection.
+- **Voltar button added to org selection screen:** `GitHubOrgs.tsx` now has a "Voltar" button that navigates to `/bootstrap` (workspace setup), allowing users to exit the import flow cleanly.
+- **Separated internal GitHub import navigation from global navigation:** Repo list "Voltar" always goes to `/github/orgs`; org selection "Voltar" goes to `/bootstrap` — no more `navigate(-1)` or conditional routing that drops context.
+- **Label improved:** "Voltar" changed to "Voltar para organizações" on the repo list screen for clarity.
+
+### Testing
+
+- **New tests:** `GitHubOrgs.test.tsx` (4 tests — render, empty state, navigate to repos, navigate to bootstrap)
+- **New tests:** `GitHubRepos.test.tsx` (5 tests — personal repos render, org repos render, back to orgs from personal, back to orgs from org, empty state)
+
+### Validation
+
+- **Frontend:** 156/156 tests passing (27 suites), `tsc --noEmit` clean, `vite build` successful
+- **Backend:** `go vet ./...`, `go test ./...`, `go build ./...` all passing
+
 ## [0.1.11] - 2026-07-02
 
 ### Added — User-Friendly Error Handling and Route Guards

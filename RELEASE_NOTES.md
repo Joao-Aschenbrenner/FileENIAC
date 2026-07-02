@@ -1,3 +1,23 @@
+# FileENIAC v0.1.12 — GitHub Import Navigation State Fix
+
+**Release Date**: 2026-07-02
+**Type**: Navigation & UX Fix
+
+## Overview
+
+Fixes the GitHub import wizard navigation: the "Voltar" button in repository lists was sending users back to workspace setup instead of the organization selection screen. The import flow now works as a proper internal wizard with context-aware back navigation.
+
+## Highlights
+
+- **Voltar from personal repos** now goes to organization selection (not workspace setup)
+- **Voltar from org repos** now goes to organization selection
+- **Voltar from org selection** goes to workspace setup (clean exit)
+- **9 new tests** covering every navigation path in the import flow
+- **156 frontend tests passing**, TypeScript clean, Vite build clean
+- **Go backend gates passing**: `go vet`, `go test`, `go build` all green
+
+---
+
 # FileENIAC v0.1.11 — User-Friendly Error Handling and Route Guards
 
 **Release Date**: 2026-07-02
