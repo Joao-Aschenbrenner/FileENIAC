@@ -25,10 +25,10 @@ describe("ApiError class", () => {
     expect(new ApiError(404, "u", "m").isForbidden()).toBe(false);
   });
 
-  it("isTimeout() always false (TimeoutError is a separate class)", () => {
+  it("isTimeout() returns true for 408 and 0, false otherwise", () => {
     expect(new ApiError(401, "u", "m").isTimeout()).toBe(false);
     expect(new ApiError(500, "u", "m").isTimeout()).toBe(false);
-    expect(new ApiError(408, "u", "m").isTimeout()).toBe(false);
+    expect(new ApiError(408, "u", "m").isTimeout()).toBe(true);
   });
 
   it("instanceof Error works (so try/catch in Effect handlers catches it)", () => {

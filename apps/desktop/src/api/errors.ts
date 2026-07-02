@@ -11,6 +11,6 @@ export class ApiError extends Error {
     return this.status === 403;
   }
   isTimeout(): boolean {
-    return false;
+    return this.status === 408 || this.status === 0;
   }
 }

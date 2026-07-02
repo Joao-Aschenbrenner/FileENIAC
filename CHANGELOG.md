@@ -5,6 +5,30 @@ All notable changes to FileENIAC will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.11] - 2026-07-02
+
+### Added — User-Friendly Error Handling and Route Guards
+
+- **Error classification system (`src/errors/`):** `AppError` with `userTitle`, `userDescription`, `actionLabel` and `errorClassifier` that translates raw JS/network errors into human-readable messages with contextual actions. Known errors (401, 403, 500, timeout, network failure) show specific guidance; unknown errors fall back to a generic message. Technical details hidden behind an expandable "Detalhes técnicos" toggle.
+- **Null-safe API client (`src/api/client.ts`):** All list endpoints (`listProjects`, `listServers`, `listWorkspaces`, `getHistory`, `getEvents`, `getDeploys`, `getSyncs`, `getGitHubOrganizations`, `getGitHubRepositories`, `listRepositories`, `listSessions`, `importGitHubRepos`) now normalize responses with `Array.isArray(data) ? data : []`. No endpoint ever returns `null` for an array — every list is guaranteed `[]` at minimum.
+- **Utility layer (`src/lib/safe.ts`):** `asArray()`, `hasItems()`, `safeString()`, `safeNumber()` — safe accessors that prevent null/undefined crashes on any data source.
+- **Not-configured state (`NotConfiguredState.tsx`):** Reusable component for menus that have no configuration yet — displays "Você ainda não configurou esta área" with a "Configurar agora" action button. Prevents blank screens on unconfigured features.
+- **`ApiError.isTimeout()` fix (`src/api/errors.ts`):** Now returns `true` for status 408 and status 0 (network-level timeout). Previously always returned `false` due to a missing `timeout` field check.
+- **Loading/error states on Projects, DeployCenter, SyncCenter:** Each page now shows a `<Loader>` while fetching and an `<ErrorState>` with retry on failure.
+- **Contextual error navigation (`AppErrorState.tsx`, `ErrorBoundary.tsx`):** Error "Voltar ao dashboard" button navigates to `/dashboard` if workspace exists, or to `/` (onboarding) if not. Error display shows "Ops, algo deu errado" with human-friendly message. Technical stack trace is collapsed under "Detalhes técnicos".
+- **Label fix (`Onboarding.tsx`):** Button label corrected from `Comecar` to `Começar` (Portuguese orthography).
+
+### Changed
+
+- Version bumped to v0.1.11
+
+### Testing & Validation
+
+- **New tests:** `src/lib/__tests__/safe.test.ts` (7 tests), `src/errors/__tests__/AppError.test.ts` (2 tests), `src/errors/__tests__/errorClassifier.test.ts` (8 tests)
+- **Updated tests:** `ErrorBoundary.test.tsx` (refactored for new contextual behavior), `errors.typed.test.ts` (isTimeout 408 → true), `Onboarding.test.tsx` (Comecar → Começar)
+- **Frontend gates:** 147/147 tests passing (25 suites), `tsc --noEmit` clean, `vite build` successful
+- **Backend gates:** `go vet ./...`, `go test ./...`, `go build ./...` all passing
+
 ## [0.1.10] - 2026-07-02
 
 ### Fixed — GitHub Import Timeout, Cancellation & Recovery

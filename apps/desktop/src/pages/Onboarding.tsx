@@ -240,7 +240,7 @@ export default function Onboarding() {
             onClick={handleStart}
             className="w-full py-3 px-6 bg-eniac-600 text-white rounded-lg font-semibold hover:bg-eniac-700 transition-colors"
           >
-            Comecar
+            Começar
           </button>
         </div>
       </div>

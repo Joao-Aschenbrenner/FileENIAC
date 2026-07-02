@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { AlertTriangle, RefreshCw, Copy, FileText } from "lucide-react";
@@ -18,7 +19,13 @@ interface DiagnosticsInfo {
   } | null;
 }
 
+function hasWorkspace(): boolean {
+  try { return !!localStorage.getItem("eniac_ws_path"); }
+  catch { return false; }
+}
+
 export function AppErrorState({ title, message, onRetry }: AppErrorStateProps) {
+  const navigate = useNavigate();
   const [showDiag, setShowDiag] = useState(false);
   const [diag, setDiag] = useState<DiagnosticsInfo | null>(null);
   const [copied, setCopied] = useState(false);
@@ -35,7 +42,7 @@ export function AppErrorState({ title, message, onRetry }: AppErrorStateProps) {
 
   async function copyDetails() {
     const lines = [
-      `FileENIAC v0.1.10 - Diagnostico`,
+      `FileENIAC v0.1.11 - Diagnostico`,
       ``,
       `Erro: ${message}`,
     ];
@@ -80,6 +87,12 @@ export function AppErrorState({ title, message, onRetry }: AppErrorStateProps) {
               Tentar novamente
             </button>
           )}
+          <button
+            onClick={() => navigate(hasWorkspace() ? "/dashboard" : "/")}
+            className="w-full py-3 px-6 bg-eniac-800/60 border border-eniac-700/40 text-eniac-200 rounded-lg font-medium hover:bg-eniac-700 transition-colors"
+          >
+            {hasWorkspace() ? "Voltar ao dashboard" : "Voltar ao inicio"}
+          </button>
           <button
             onClick={loadDiagnostics}
             className="w-full py-3 px-6 bg-eniac-900/60 border border-eniac-700/40 text-eniac-200 rounded-lg font-medium hover:bg-eniac-800/60 transition-colors flex items-center justify-center gap-2"

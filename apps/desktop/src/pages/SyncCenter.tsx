@@ -4,6 +4,8 @@ import { listProjects, getDiff, getSyncs, executeSync } from "../api/client";
 import { Card } from "../components/ui/Card";
 import { Badge } from "../components/ui/Badge";
 import { Table } from "../components/ui/Table";
+import { Loader } from "../components/ui/Loader";
+import { ErrorState } from "../components/ui/ErrorState";
 import { Toast } from "../components/ui/Toast";
 
 export default function SyncCenter() {
@@ -11,21 +13,31 @@ export default function SyncCenter() {
   const [selectedProject, setSelectedProject] = useState<string>("");
   const [diff, setDiff] = useState<any>(null);
   const [syncs, setSyncs] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [syncLoading, setSyncLoading] = useState(false);
   const [syncing, setSyncing] = useState(false);
+  const [error, setError] = useState("");
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
 
-  useEffect(() => {
+  function loadProjects() {
+    setLoading(true);
+    setError("");
     const wsPath = localStorage.getItem("eniac_ws_path") || "";
     listProjects(wsPath)
       .then(setProjects)
-      .catch(() => {});
-  }, []);
+      .catch((e) => setError(e.message))
+      .finally(() => setLoading(false));
+  }
+
+  useEffect(() => { loadProjects(); }, []);
+
+  if (loading) return <Loader text="Carregando projetos..." />;
+  if (error) return <ErrorState message={error} onRetry={loadProjects} />;
 
   async function handleAnalyze() {
     if (!selectedProject) return;
-    setLoading(true);
+    setSyncLoading(true);
     try {
       const [diffData, syncData] = await Promise.all([
         getDiff(selectedProject),
@@ -36,7 +48,7 @@ export default function SyncCenter() {
     } catch (e: any) {
       setToast({ message: e.message, type: "error" });
     }
-    setLoading(false);
+    setSyncLoading(false);
   }
 
   async function handleSync() {
@@ -89,10 +101,10 @@ export default function SyncCenter() {
         <Card title="Ação">
           <button
             onClick={handleAnalyze}
-            disabled={!selectedProject || loading}
+            disabled={!selectedProject || syncLoading}
             className="w-full py-2 bg-eniac-600 text-white text-sm rounded-lg hover:bg-eniac-700 disabled:opacity-50 transition-colors"
           >
-            {loading ? "Analisando..." : "Analisar"}
+            {syncLoading ? "Analisando..." : "Analisar"}
           </button>
         </Card>
       </div>

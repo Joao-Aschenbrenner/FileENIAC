@@ -1,3 +1,28 @@
+# FileENIAC v0.1.11 — User-Friendly Error Handling and Route Guards
+
+**Release Date**: 2026-07-02
+**Type**: User Experience & Reliability
+
+## Overview
+
+This release eliminates every bare JavaScript error from the user's view. Null references (`Cannot read properties of null`), network failures (`Failed to fetch`), timeouts, and API errors are now intercepted and displayed as human-readable messages with contextual action buttons. Every screen that was vulnerable to broken data now has explicit loading, empty, not-configured, and error states.
+
+## Highlights
+
+- **Human-readable errors everywhere**: every `TypeError`, `ApiError`, `TimeoutError` is classified into `{title, description, actionLabel}`. Stack traces hidden by default behind "Detalhes técnicos".
+- **Null-safe API client**: all list endpoints return `[]` instead of `null`. No more "Cannot read properties of null" when an API returns an unexpected response.
+- **Contextual error navigation**: "Voltar ao dashboard" goes to `/dashboard` if workspace exists, or to `/` (onboarding) if not.
+- **Not-configured states**: every unconfigured menu area shows a friendly message with "Configurar agora" instead of a blank/breaking screen.
+- **Timeout detection fixed**: `ApiError.isTimeout()` now correctly catches network-level timeouts (status 0) and HTTP 408 responses.
+- **147 frontend tests passing**, TypeScript clean, Vite build clean.
+- **Go backend gates passing**: `go vet`, `go test`, `go build` all green.
+
+## Changes
+
+See `CHANGELOG.md` for the full list of changes.
+
+---
+
 # FileENIAC v0.1.2 — Release Notes
 
 **Release Date**: 2026-06-29

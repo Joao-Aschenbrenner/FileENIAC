@@ -2,8 +2,12 @@
 import { useEffect, useState } from "react";
 import { listProjects, deleteProject, createProject } from "../api/client";
 
+import { Loader } from "../components/ui/Loader";
+import { ErrorState } from "../components/ui/ErrorState";
+
 export default function Projects() {
   const [projects, setProjects] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [creating, setCreating] = useState(false);
@@ -11,15 +15,21 @@ export default function Projects() {
   const [form, setForm] = useState({ name: "", local_path: "", remote_path: "/", branch: "main" });
 
   function loadProjects() {
+    setLoading(true);
+    setError("");
     const wsPath = localStorage.getItem("eniac_ws_path") || "";
     listProjects(wsPath)
       .then(setProjects)
-      .catch((e) => setError(e.message));
+      .catch((e) => setError(e.message))
+      .finally(() => setLoading(false));
   }
 
   useEffect(() => {
     loadProjects();
   }, []);
+
+  if (loading) return <Loader text="Carregando projetos..." />;
+  if (error) return <ErrorState message={error} onRetry={loadProjects} />;
 
   async function handleCreate() {
     if (creating) return;

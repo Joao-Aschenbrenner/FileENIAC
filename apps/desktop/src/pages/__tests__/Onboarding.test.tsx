@@ -43,7 +43,7 @@ function renderOnboarding() {
 }
 
 async function goToWorkspaceManager() {
-  const start = await screen.findByRole('button', { name: /Comecar/i });
+  const start = await screen.findByRole('button', { name: /Começar/i });
   fireEvent.click(start);
   await waitFor(() => {
     expect(screen.getByRole('heading', { name: /Escolher Pasta dos Workspaces/i })).toBeInTheDocument();
@@ -80,7 +80,7 @@ describe('Onboarding', () => {
   it('renders the welcome screen after startup', async () => {
     renderOnboarding();
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /Comecar/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Começar/i })).toBeInTheDocument();
     });
     expect(screen.getByRole('heading', { name: /FileENIAC/i })).toBeInTheDocument();
   });

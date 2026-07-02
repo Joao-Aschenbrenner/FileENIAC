@@ -166,7 +166,8 @@ export async function getWorkspace(wsPath: string): Promise<any> {
 }
 
 export async function listWorkspaces(rootPath: string): Promise<any[]> {
-  return get(`/workspaces?root=${encodeURIComponent(rootPath)}`);
+  const data = await get(`/workspaces?root=${encodeURIComponent(rootPath)}`);
+  return Array.isArray(data) ? data : [];
 }
 
 export async function createWorkspace(workspacePath: string, data: { name?: string; description?: string } = {}): Promise<any> {
@@ -182,7 +183,8 @@ export async function enterWorkspace(wsPath: string): Promise<any> {
 }
 
 export async function listProjects(wsPath: string): Promise<any[]> {
-  return get(`/projects?workspace=${encodeURIComponent(wsPath)}`);
+  const data = await get(`/projects?workspace=${encodeURIComponent(wsPath)}`);
+  return Array.isArray(data) ? data : [];
 }
 
 export async function getProject(wsPath: string, name: string): Promise<any> {
@@ -200,7 +202,8 @@ export async function deleteProject(wsPath: string, name: string): Promise<any> 
 export async function listServers(wsPath: string, project?: string): Promise<any[]> {
   let path = `/servers?workspace=${encodeURIComponent(wsPath)}`;
   if (project) path += `&project=${encodeURIComponent(project)}`;
-  return get(path);
+  const data = await get(path);
+  return Array.isArray(data) ? data : [];
 }
 
 export async function getServer(wsPath: string, id: number): Promise<any> {
@@ -230,7 +233,8 @@ export async function getHistory(wsPath: string, params: { project?: string; typ
   if (params.limit) qs.set("limit", String(params.limit));
   if (params.offset) qs.set("offset", String(params.offset));
   const extra = qs.toString();
-  return get(extra ? `/history?workspace=${encodeURIComponent(wsPath)}&${extra}` : `/history?workspace=${encodeURIComponent(wsPath)}`);
+  const data = await get(extra ? `/history?workspace=${encodeURIComponent(wsPath)}&${extra}` : `/history?workspace=${encodeURIComponent(wsPath)}`);
+  return Array.isArray(data) ? data : [];
 }
 
 export async function getEvents(wsPath: string, params: { type?: string; limit?: number; offset?: number }): Promise<any[]> {
@@ -239,13 +243,15 @@ export async function getEvents(wsPath: string, params: { type?: string; limit?:
   if (params.limit) qs.set("limit", String(params.limit));
   if (params.offset) qs.set("offset", String(params.offset));
   const extra = qs.toString();
-  return get(extra ? `/events?workspace=${encodeURIComponent(wsPath)}&${extra}` : `/events?workspace=${encodeURIComponent(wsPath)}`);
+  const data = await get(extra ? `/events?workspace=${encodeURIComponent(wsPath)}&${extra}` : `/events?workspace=${encodeURIComponent(wsPath)}`);
+  return Array.isArray(data) ? data : [];
 }
 
 export async function getDeploys(project: string, limit?: number): Promise<any[]> {
   const qs = new URLSearchParams({ project });
   if (limit) qs.set("limit", String(limit));
-  return get(ws("/deploys", qs.toString()));
+  const data = await get(ws("/deploys", qs.toString()));
+  return Array.isArray(data) ? data : [];
 }
 
 export async function executeDeploy(project: string, useFallback?: boolean): Promise<any> {
@@ -268,7 +274,8 @@ export async function getSyncs(project?: string, limit?: number): Promise<any[]>
   const qs = new URLSearchParams();
   if (project) qs.set("project", project);
   if (limit) qs.set("limit", String(limit));
-  return get(ws("/syncs", qs.toString()));
+  const data = await get(ws("/syncs", qs.toString()));
+  return Array.isArray(data) ? data : [];
 }
 
 export async function executeSync(project: string, action: string, confirm?: boolean | { confirm?: boolean; confirmDeleting?: boolean }): Promise<any> {
@@ -298,7 +305,8 @@ export async function getHealthCheck(): Promise<any> {
 }
 
 export async function listSessions(): Promise<any[]> {
-  return get(ws("/sessions"));
+  const data = await get(ws("/sessions"));
+  return Array.isArray(data) ? data : [];
 }
 
 export async function activateSession(id: number): Promise<any> {
@@ -335,16 +343,19 @@ export async function gitHubLogout(): Promise<any> {
 }
 
 export async function getGitHubOrganizations(): Promise<any[]> {
-  return get(ws("/github/organizations"));
+  const data = await get(ws("/github/organizations"));
+  return Array.isArray(data) ? data : [];
 }
 
 export async function getGitHubRepositories(org?: string): Promise<any[]> {
   const extra = org ? `org=${encodeURIComponent(org)}` : "";
-  return get(ws("/github/repositories", extra));
+  const data = await get(ws("/github/repositories", extra));
+  return Array.isArray(data) ? data : [];
 }
 
 export async function importGitHubRepos(repos: any[], cloneDir?: string): Promise<any[]> {
-  return postWithTimeout(ws("/github/import"), { repos, clone_dir: cloneDir }, IMPORT_TIMEOUT_MS);
+  const data = await postWithTimeout(ws("/github/import"), { repos, clone_dir: cloneDir }, IMPORT_TIMEOUT_MS);
+  return Array.isArray(data) ? data : [];
 }
 
 export async function cloneGitHubRepo(repoId: number, projectId: number, cloneUrl: string, branch: string, cloneDir: string): Promise<any> {
@@ -355,7 +366,8 @@ export async function listRepositories(org?: string): Promise<any[]> {
   const wsPath = localStorage.getItem("eniac_ws_path") || "";
   let path = `/repositories?workspace=${encodeURIComponent(wsPath)}`;
   if (org) path += `&org=${encodeURIComponent(org)}`;
-  return get(path);
+  const data = await get(path);
+  return Array.isArray(data) ? data : [];
 }
 
 export async function getRepository(githubId: number): Promise<any> {

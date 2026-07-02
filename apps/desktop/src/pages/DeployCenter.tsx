@@ -20,13 +20,17 @@ export default function DeployCenter() {
   const [error, setError] = useState("");
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
-  useEffect(() => {
+  function loadProjects() {
+    setLoading(true);
+    setError("");
     const wsPath = localStorage.getItem("eniac_ws_path") || "";
     listProjects(wsPath)
       .then(setProjects)
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
-  }, []);
+  }
+
+  useEffect(() => { loadProjects(); }, []);
 
   const loadDeploys = useCallback(() => {
     if (!selectedProject) return;
@@ -54,7 +58,7 @@ export default function DeployCenter() {
   }
 
   if (loading) return <Loader />;
-  if (error) return <ErrorState message={error} />;
+  if (error) return <ErrorState message={error} onRetry={loadProjects} />;
 
   return (
     <div>
