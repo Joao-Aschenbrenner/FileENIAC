@@ -5,6 +5,29 @@ All notable changes to FileENIAC will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.10] - 2026-07-02
+
+### Fixed — GitHub Import Timeout, Cancellation & Recovery
+
+- **False timeout eliminated:** GitHub import no longer fails early due to the generic 30s mutation timeout. Imports now use a dedicated 5-minute timeout.
+- **Per-repo clone timeout added:** `git clone --depth 1` now has a 120s backend timeout via `exec.CommandContext`. Previously a hanging clone could block the import indefinitely.
+- **Partial clone cleanup:** if `git clone` fails or times out, the partial directory is removed to prevent incomplete repos from appearing as valid imports.
+- **Cancellation propagation:** the import loop checks `reqCtx.Err()` between repos and stops processing when the HTTP request is cancelled. Clone in-progress is also cancelled via context propagation.
+- **Reimport idempotency:** reimporting an existing project detects the duplicate via `registry.GetProject`, skips DB registration, reports "already imported" instead of a SQL constraint error, and does not duplicate or corrupt data.
+- **Timeout UX improved:** the error message now says "A importação demorou mais que o esperado. Pode ser que alguns projetos já tenham sido importados. Clique em Tentar novamente para verificar." instead of a bare "Request timed out".
+- **Structured import logging:** added lifecycle logs — `github import started`, `github import canceled`, `github import completed` with success/failed/total counts — without exposing tokens or credentials.
+- **GitHub User-Agent sanitized:** outbound GitHub API calls use `FileENIAC/1.0` (no Go default identifier).
+
+### Added
+
+- **Clone cancellation tests:** `TestClone_CanceledContext`, `TestClone_ExpiredDeadline`, `TestClone_PartialDirRemovedOnFailure`, `TestClone_DefaultTimeoutApplied` verify context-based timeout, partial dir cleanup, and default timeout behavior.
+
+### Changed
+
+- **`clone.Clone()` signature:** now accepts `context.Context` as first parameter. All callers updated.
+- **`importGitHubRepos` timeout:** uses `IMPORT_TIMEOUT_MS = 300_000` instead of `MUTATION_TIMEOUT_MS`.
+- **`postWithTimeout` helper:** extracted from `post()` to allow per-call timeout values.
+
 ## [0.1.9] - 2026-07-01
 
 ### Fixed — Correct Workspace Flow

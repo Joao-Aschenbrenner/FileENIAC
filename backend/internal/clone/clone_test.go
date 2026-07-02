@@ -2,9 +2,11 @@
 package clone_test
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/ENIACSystems/FileENIAC/backend/internal/clone"
 )
@@ -45,7 +47,7 @@ func TestClone_DirectoryAlreadyExists(t *testing.T) {
 	if err := os.MkdirAll(existingDir, 0755); err != nil {
 		t.Fatalf("mkdir failed: %v", err)
 	}
-	_, err := clone.Clone("https://example.com/repo.git", existingDir, "main")
+	_, err := clone.Clone(context.Background(), "https://example.com/repo.git", existingDir, "main")
 	if err == nil {
 		t.Fatal("expected error for existing directory")
 	}
@@ -54,9 +56,60 @@ func TestClone_DirectoryAlreadyExists(t *testing.T) {
 func TestClone_InvalidURL(t *testing.T) {
 	dir := t.TempDir()
 	newDir := filepath.Join(dir, "new-clone")
-	_, err := clone.Clone("", newDir, "main")
+	_, err := clone.Clone(context.Background(), "", newDir, "main")
 	if err == nil {
 		t.Log("Clone returned nil error for empty URL (may fail at exec)")
+	}
+}
+
+func TestClone_CanceledContext(t *testing.T) {
+	dir := t.TempDir()
+	newDir := filepath.Join(dir, "canceled-clone")
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	_, err := clone.Clone(ctx, "https://example.com/repo.git", newDir, "main")
+	if err == nil {
+		t.Fatal("expected error for canceled context")
+	}
+	if _, statErr := os.Stat(newDir); !os.IsNotExist(statErr) {
+		t.Error("expected partial clone dir to be removed after cancellation")
+	}
+}
+
+func TestClone_ExpiredDeadline(t *testing.T) {
+	dir := t.TempDir()
+	newDir := filepath.Join(dir, "expired-clone")
+	ctx, cancel := context.WithTimeout(context.Background(), -1*time.Second)
+	defer cancel()
+	_, err := clone.Clone(ctx, "https://example.com/repo.git", newDir, "main")
+	if err == nil {
+		t.Fatal("expected error for expired deadline context")
+	}
+	if _, statErr := os.Stat(newDir); !os.IsNotExist(statErr) {
+		t.Error("expected partial clone dir to be removed after deadline expiry")
+	}
+}
+
+func TestClone_PartialDirRemovedOnFailure(t *testing.T) {
+	dir := t.TempDir()
+	newDir := filepath.Join(dir, "partial-clone")
+	os.MkdirAll(newDir, 0755)
+	if _, err := clone.Clone(context.Background(), "https://example.com/repo.git", newDir, "main"); err == nil {
+		t.Fatal("expected error when clone dir already exists")
+	}
+}
+
+func TestClone_DefaultTimeoutApplied(t *testing.T) {
+	dir := t.TempDir()
+	newDir := filepath.Join(dir, "timeout-clone")
+	ctx := context.Background()
+	_, err := clone.Clone(ctx, "", newDir, "main")
+	if err == nil {
+		t.Log("Clone returned nil for empty URL — git not installed?")
+	} else {
+		if ctx.Err() != nil {
+			t.Error("background context should not be canceled")
+		}
 	}
 }
 

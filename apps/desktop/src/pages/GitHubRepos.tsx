@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { getGitHubRepositories, importGitHubRepos } from "../api/client";
+import { getGitHubRepositories, importGitHubRepos, TimeoutError } from "../api/client";
 import { Loader } from "../components/ui/Loader";
 import { ErrorState } from "../components/ui/ErrorState";
 import { Badge } from "../components/ui/Badge";
@@ -56,7 +56,11 @@ export default function GitHubRepos() {
         load();
       }
     } catch (e: any) {
-      setError(e.message);
+      if (e instanceof TimeoutError) {
+        setError("A importação demorou mais que o esperado. Pode ser que alguns projetos já tenham sido importados. Clique em \"Tentar novamente\" para verificar.");
+      } else {
+        setError(e.message);
+      }
     }
     setImporting(false);
   }

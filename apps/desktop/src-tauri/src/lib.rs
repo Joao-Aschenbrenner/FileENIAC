@@ -149,7 +149,7 @@ pub fn run() {
 
             let _ = std::fs::remove_file(&bootstrap_log_path);
             write_log(&bootstrap_log_path, "[bootstrap] starting FileENIAC desktop");
-            write_log(&bootstrap_log_path, &format!("[bootstrap] app_version=0.1.9"));
+            write_log(&bootstrap_log_path, &format!("[bootstrap] app_version=0.1.10"));
 
             let port_ready = Arc::new(Condvar::new());
 

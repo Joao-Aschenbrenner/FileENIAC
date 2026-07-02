@@ -1130,12 +1130,37 @@ func (s *Server) handleGitHubImport() http.HandlerFunc {
 		}
 
 		wsPath := ctx.Workspace.Path
-		results := make([]importResult, 0, len(body.Repos))
+		reqCtx := r.Context()
+		repoCount := len(body.Repos)
+		log.L().Info("github import started", zap.Int("repos", repoCount), zap.String("workspace", wsPath))
+		results := make([]importResult, 0, repoCount)
 
 		for _, repo := range body.Repos {
-			r := importResult{Repo: repo}
+			if err := reqCtx.Err(); err != nil {
+				log.L().Info("github import canceled", zap.Int("completed", len(results)), zap.Int("total", repoCount))
+				break
+			}
+
+			ir := importResult{Repo: repo}
 
 			cloneDir := filepath.Join(wsPath, "projects", repo.Name)
+
+			existingProject, lookupErr := registry.GetProject(ctx, repo.Name)
+			if lookupErr == nil {
+				if clone.IsCloned(cloneDir) {
+					ir.ProjectID = existingProject.ID
+					ir.CloneResult = &clone.Result{Path: cloneDir, Branch: repo.DefaultBranch}
+					results = append(results, ir)
+					log.L().Info("repo already imported, skipping", zap.String("name", repo.Name))
+					continue
+				}
+				ir.ProjectID = existingProject.ID
+				ir.CloneResult = &clone.Result{Path: cloneDir, Branch: repo.DefaultBranch}
+				ir.Error = "projeto já existe no banco, mas clone incompleto"
+				results = append(results, ir)
+				log.L().Warn("repo registered but not cloned", zap.String("name", repo.Name))
+				continue
+			}
 
 			project, err := registry.AddProject(ctx, &registry.Project{
 				Name:        repo.Name,
@@ -1147,11 +1172,11 @@ func (s *Server) handleGitHubImport() http.HandlerFunc {
 				Environment: "production",
 			})
 			if err != nil {
-				r.Error = fmt.Sprintf("project registration: %s", err)
-				results = append(results, r)
+				ir.Error = fmt.Sprintf("project registration: %s", err)
+				results = append(results, ir)
 				continue
 			}
-			r.ProjectID = project
+			ir.ProjectID = project
 
 			repoID, err := registry.AddRepository(ctx, &registry.Repository{
 				GitHubID:      repo.ID,
@@ -1166,25 +1191,25 @@ func (s *Server) handleGitHubImport() http.HandlerFunc {
 				Organization:  repo.Organization,
 			})
 			if err != nil {
-				r.Error = fmt.Sprintf("repository registration: %s", err)
-				results = append(results, r)
+				ir.Error = fmt.Sprintf("repository registration: %s", err)
+				results = append(results, ir)
 				continue
 			}
-			r.RepositoryID = repoID
+			ir.RepositoryID = repoID
 
-			cloneResult, err := clone.Clone(repo.CloneURL, cloneDir, repo.DefaultBranch)
+			cloneResult, err := clone.Clone(reqCtx, repo.CloneURL, cloneDir, repo.DefaultBranch)
 			if err != nil {
 				registry.UpdateRepositoryImport(ctx, repoID, project, "clone_failed", "")
-				r.Error = fmt.Sprintf("clone: %s", err)
-				results = append(results, r)
+				ir.Error = fmt.Sprintf("clone: %s", err)
+				results = append(results, ir)
 				continue
 			}
-			r.CloneResult = cloneResult
+			ir.CloneResult = cloneResult
 
 			registry.UpdateRepositoryImport(ctx, repoID, project, "cloned", cloneDir)
 
 			vResult := validate.ValidateClone(cloneDir, repo.DefaultBranch)
-			r.Validation = vResult
+			ir.Validation = vResult
 
 			importStatus := "imported"
 			if !vResult.Valid {
@@ -1195,8 +1220,20 @@ func (s *Server) handleGitHubImport() http.HandlerFunc {
 
 			ctx.DB.RecordEvent("github_import", fmt.Sprintf("Imported %s/%s", repo.Organization, repo.Name), map[string]interface{}{"project_id": project, "github_id": repo.ID})
 
-			results = append(results, r)
+			results = append(results, ir)
 		}
+
+		successCount := 0
+		for _, res := range results {
+			if res.Error == "" {
+				successCount++
+			}
+		}
+		log.L().Info("github import completed",
+			zap.Int("success", successCount),
+			zap.Int("failed", len(results)-successCount),
+			zap.Int("total", repoCount),
+		)
 
 		respond(w, http.StatusOK, results)
 	}
@@ -1229,7 +1266,7 @@ func (s *Server) handleGitHubClone() http.HandlerFunc {
 			body.Branch = "main"
 		}
 
-		cloneResult, err := clone.Clone(body.CloneURL, body.CloneDir, body.Branch)
+		cloneResult, err := clone.Clone(r.Context(), body.CloneURL, body.CloneDir, body.Branch)
 		if err != nil {
 			respondError(w, http.StatusInternalServerError, err.Error())
 			return

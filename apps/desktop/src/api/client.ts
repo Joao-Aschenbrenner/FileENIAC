@@ -8,6 +8,7 @@ let BASE_URL = "http://localhost:8080/api";
 
 export const GET_TIMEOUT_MS = 10_000;
 export const MUTATION_TIMEOUT_MS = 30_000;
+export const IMPORT_TIMEOUT_MS = 300_000;
 
 export class TimeoutError extends Error {
   constructor(public ms: number) {
@@ -63,9 +64,13 @@ async function get(path: string): Promise<any> {
 }
 
 async function post(path: string, body: any): Promise<any> {
+  return postWithTimeout(path, body, MUTATION_TIMEOUT_MS);
+}
+
+async function postWithTimeout(path: string, body: any, timeoutMs: number): Promise<any> {
   const token = await resolveApiToken();
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), MUTATION_TIMEOUT_MS);
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
     const res = await fetch(`${BASE_URL}${path}`, {
       method: "POST",
@@ -88,7 +93,7 @@ async function post(path: string, body: any): Promise<any> {
   } catch (err) {
     clearTimeout(timer);
     if (err instanceof DOMException && err.name === "AbortError") {
-      throw new TimeoutError(MUTATION_TIMEOUT_MS);
+      throw new TimeoutError(timeoutMs);
     }
     throw err;
   }
@@ -339,7 +344,7 @@ export async function getGitHubRepositories(org?: string): Promise<any[]> {
 }
 
 export async function importGitHubRepos(repos: any[], cloneDir?: string): Promise<any[]> {
-  return post(ws("/github/import"), { repos, clone_dir: cloneDir });
+  return postWithTimeout(ws("/github/import"), { repos, clone_dir: cloneDir }, IMPORT_TIMEOUT_MS);
 }
 
 export async function cloneGitHubRepo(repoId: number, projectId: number, cloneUrl: string, branch: string, cloneDir: string): Promise<any> {
