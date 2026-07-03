@@ -1,4 +1,4 @@
-# FileENIAC v0.1.12 — GitHub Import Navigation State Fix
+# FileENIAC v0.2.0 — Projects Import Flow Reorganization
 
 **Release Date**: 2026-07-02
 **Type**: Navigation & UX Fix
