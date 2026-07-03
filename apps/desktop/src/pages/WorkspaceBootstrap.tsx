@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: MIT
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getGitHubStatus, getGitHubOrganizations, listRepositories, listProjects } from "../api/client";
-import { Card } from "../components/ui/Card";
+import { getGitHubStatus, getGitHubOrganizations } from "../api/client";
 import { Badge } from "../components/ui/Badge";
 import { Loader } from "../components/ui/Loader";
 
@@ -10,8 +9,6 @@ export default function WorkspaceBootstrap() {
   const navigate = useNavigate();
   const [status, setStatus] = useState<any>(null);
   const [orgs, setOrgs] = useState<any[]>([]);
-  const [repos, setRepos] = useState<any[]>([]);
-  const [projects, setProjects] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const wsPath = localStorage.getItem("eniac_ws_path") || "";
 
@@ -24,14 +21,10 @@ export default function WorkspaceBootstrap() {
     Promise.all([
       getGitHubStatus(),
       getGitHubOrganizations().catch(() => []),
-      listRepositories().catch(() => []),
-      listProjects(activeWorkspace).catch(() => []),
     ])
-      .then(([s, o, r, p]) => {
+      .then(([s, o]) => {
         setStatus(s);
         setOrgs(Array.isArray(o) ? o : []);
-        setRepos(Array.isArray(r) ? r : []);
-        setProjects(Array.isArray(p) ? p : []);
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -59,8 +52,7 @@ export default function WorkspaceBootstrap() {
   const steps = [
     {
       label: "Workspace selecionado",
-      done: !!wsPath,
-      action: "/",
+      done: true,
       detail: wsPath,
     },
     {
@@ -70,46 +62,20 @@ export default function WorkspaceBootstrap() {
       detail: status?.authenticated ? `Autenticado como ${status.user}` : "Conectar GitHub",
     },
     {
-      label: "Organizações",
+      label: "Organizacoes",
       done: orgs.length > 0,
       action: "/github/orgs",
-      detail: `${orgs.length} organizações encontradas`,
-    },
-    {
-      label: "Importar repositorios",
-      done: repos.length > 0,
-      action: "/github/repos",
-      detail: `${repos.length} repositórios importados`,
-    },
-    {
-      label: "Projetos no Workspace",
-      done: projects.length > 0,
-      action: "/projects",
-      detail: `${projects.length} projetos registrados`,
+      detail: orgs.length > 0 ? `${orgs.length} organizacoes encontradas` : "Nenhuma organizacao",
     },
   ];
+
+  const allDone = steps.every((s) => s.done);
 
   return (
     <div className="max-w-xl mx-auto mt-8">
       <div className="text-center mb-8">
-        <h2 className="text-2xl font-bold text-gray-800">Conectar Projetos ao Workspace</h2>
-        <p className="text-sm text-gray-500 mt-1">Conecte GitHub ou GitLab e importe os projetos para este workspace</p>
-      </div>
-
-      <div className="grid gap-3 sm:grid-cols-2 mb-8">
-        <button
-          onClick={() => navigate(status?.authenticated ? "/github/repos" : "/github/login")}
-          className="bg-white rounded-xl border border-gray-200 p-5 text-left shadow-sm hover:border-eniac-400 hover:bg-eniac-50 transition-colors"
-        >
-          <p className="font-semibold text-gray-800">GitHub</p>
-          <p className="text-xs text-gray-500 mt-1">
-            {status?.authenticated ? `Conectado como ${status.user}` : "Conectar conta e escolher repositorios"}
-          </p>
-        </button>
-        <div className="bg-gray-50 rounded-xl border border-gray-200 p-5 text-left shadow-sm opacity-75">
-          <p className="font-semibold text-gray-700">GitLab</p>
-          <p className="text-xs text-gray-500 mt-1">Disponivel em uma proxima versao.</p>
-        </div>
+        <h2 className="text-2xl font-bold text-gray-800">Configuracao do Ambiente</h2>
+        <p className="text-sm text-gray-500 mt-1">Verifique o workspace e conecte provedores</p>
       </div>
 
       <div className="space-y-3 mb-8">
@@ -130,7 +96,7 @@ export default function WorkspaceBootstrap() {
                 <p className="text-xs text-gray-500">{step.detail}</p>
               </div>
             </div>
-            {!step.done && (
+            {!step.done && step.action && (
               <button onClick={() => navigate(step.action)}
                 className="px-3 py-1.5 text-xs bg-eniac-600 text-white rounded-lg hover:bg-eniac-700 transition-colors">
                 Configurar
@@ -141,31 +107,6 @@ export default function WorkspaceBootstrap() {
         ))}
       </div>
 
-      <Card title="Resumo do Ambiente">
-        <div className="space-y-2 text-sm">
-          <div className="flex justify-between gap-4">
-            <span className="text-gray-500">Workspace</span>
-            <span className="text-right break-all">{wsPath}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-gray-500">GitHub</span>
-            <span>{status?.authenticated ? `Conectado (${status.user})` : "Desconectado"}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-gray-500">Organizações</span>
-            <span>{orgs.length}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-gray-500">Repositórios importados</span>
-            <span>{repos.length}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-gray-500">Projetos</span>
-            <span>{projects.length}</span>
-          </div>
-        </div>
-      </Card>
-
       {!status?.authenticated && (
         <div className="text-center mt-6">
           <button onClick={() => navigate("/github/login")}
@@ -175,20 +116,26 @@ export default function WorkspaceBootstrap() {
         </div>
       )}
 
-      {status?.authenticated && projects.length === 0 && (
+      {status?.authenticated && !allDone && (
         <div className="text-center mt-6">
           <button onClick={() => navigate("/github/orgs")}
             className="px-6 py-3 bg-eniac-600 text-white rounded-lg font-medium hover:bg-eniac-700 transition-colors">
-            Importar Repositórios
+            Explorar Organizacoes
           </button>
         </div>
       )}
 
-      {status?.authenticated && projects.length > 0 && (
-        <div className="text-center mt-6">
+      {allDone && (
+        <div className="text-center mt-6 space-y-3">
           <div className="bg-green-50 border border-green-200 rounded-lg p-4 inline-block">
             <p className="text-green-700 font-medium">Ambiente Pronto!</p>
-            <p className="text-green-600 text-sm mt-1">Workspace configurado com {projects.length} projetos</p>
+            <p className="text-green-600 text-sm mt-1">Workspace configurado</p>
+          </div>
+          <div>
+            <button onClick={() => navigate("/projects")}
+              className="px-6 py-3 bg-eniac-600 text-white rounded-lg font-medium hover:bg-eniac-700 transition-colors">
+              Ir para Projetos
+            </button>
           </div>
         </div>
       )}

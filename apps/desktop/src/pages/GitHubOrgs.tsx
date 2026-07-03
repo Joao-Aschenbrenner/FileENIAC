@@ -57,7 +57,7 @@ export default function GitHubOrgs() {
         </div>
 
         <div className="flex gap-3">
-          <button onClick={() => navigate("/bootstrap")}
+          <button onClick={() => navigate("/projects")}
             className="flex-1 py-2.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
             Voltar
           </button>

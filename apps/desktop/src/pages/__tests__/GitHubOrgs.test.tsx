@@ -19,7 +19,7 @@ function renderWithRoutes(initialRoute = '/github/orgs') {
       <Routes>
         <Route path="/github/orgs" element={<GitHubOrgs />} />
         <Route path="/github/repos" element={<MockTarget />} />
-        <Route path="/bootstrap" element={<MockTarget />} />
+        <Route path="/projects" element={<MockTarget />} />
       </Routes>
     </MemoryRouter>,
   );
@@ -54,7 +54,7 @@ describe('GitHubOrgs', () => {
     });
   });
 
-  it('navigates to /bootstrap when clicking Voltar', async () => {
+  it('navigates to /projects when clicking Voltar', async () => {
     renderWithRoutes();
     await waitFor(() => expect(screen.getByText('ENIACSystems')).toBeInTheDocument());
 

@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import GitHubRepos from '../GitHubRepos';
-import { getGitHubRepositories } from '../../api/client';
+import { getGitHubRepositories, importGitHubRepos } from '../../api/client';
 
 vi.mock('../../api/client', () => ({
   getGitHubRepositories: vi.fn(),
@@ -26,6 +26,7 @@ function renderWithRoutes(initialRoute = '/github/repos') {
       <Routes>
         <Route path="/github/repos" element={<GitHubRepos />} />
         <Route path="/github/orgs" element={<MockTarget />} />
+        <Route path="/projects" element={<MockTarget />} />
       </Routes>
     </MemoryRouter>,
   );
@@ -83,6 +84,18 @@ describe('GitHubRepos', () => {
     renderWithRoutes();
     await waitFor(() => {
       expect(screen.getByText('Nenhum repositório encontrado.')).toBeInTheDocument();
+    });
+  });
+
+  it('navigates to /projects after successful import', async () => {
+    vi.mocked(importGitHubRepos).mockResolvedValue([{ id: 1, name: 'repo-a', error: false }]);
+    renderWithRoutes();
+    await waitFor(() => expect(screen.getByText('repo-a')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByText('repo-a'));
+    fireEvent.click(screen.getByText('Importar (1)'));
+    await waitFor(() => {
+      expect(screen.getByTestId('mock-target')).toBeInTheDocument();
     });
   });
 });

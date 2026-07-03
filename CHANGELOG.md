@@ -7,22 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.1.12] - 2026-07-02
 
-### Fixed — GitHub Import Navigation State
+### UX Flow Reorganization: Workspace, Providers and Projects
 
-- **GitHub import back navigation from personal repos:** Clicking "Voltar" in "Meus Repositórios" now correctly navigates back to organization selection (`/github/orgs`) instead of workspace setup (`/bootstrap`).
-- **GitHub import back navigation from org repos:** Clicking "Voltar" in organization repository list also navigates back to organization selection.
-- **Voltar button added to org selection screen:** `GitHubOrgs.tsx` now has a "Voltar" button that navigates to `/bootstrap` (workspace setup), allowing users to exit the import flow cleanly.
-- **Separated internal GitHub import navigation from global navigation:** Repo list "Voltar" always goes to `/github/orgs`; org selection "Voltar" goes to `/bootstrap` — no more `navigate(-1)` or conditional routing that drops context.
-- **Label improved:** "Voltar" changed to "Voltar para organizações" on the repo list screen for clarity.
+- **WorkspaceBootstrap simplified:** Now a validation/environment-ready screen only. Removed "Importar repositórios" and "Projetos no Workspace" steps. Title changed from "Conectar Projetos ao Workspace" to "Configuração do Ambiente". CTAs replaced with "Ir para Projetos" when environment is ready.
+- **Projects page redesigned as the main import hub:**
+  - "Novo Projeto" form removed; replaced with "+ Adicionar Repositórios" button that navigates to GitHub organization selection.
+  - Empty state added with description "Nenhum repositorio adicionado" and prominent "Adicionar Repositórios" CTA.
+  - Technical directories (`.git`, `.github`, `.eniac`, `.vscode`, `.idea`, `node_modules`, `dist`, `build`, `target`, `vendor`, `__pycache__`) are automatically filtered out via `isProjectDirectory()`.
+  - Safe remove modal: "Isso remove o projeto da lista do FileENIAC, mas nao apaga os arquivos locais" with optional "Tambem apagar arquivos locais" checkbox (off by default).
+- **GitHub import navigation redirected to Projects:**
+  - `GitHubOrgs.tsx` "Voltar" now navigates to `/projects` instead of `/bootstrap`.
+  - `GitHubRepos.tsx` navigates to `/projects` after successful import (instead of staying on the same page).
+  - Full flow: Projects → GitHub Orgs → GitHub Repos → Projects.
+
+### Added
+
+- **`src/lib/projectUtils.ts`:** New module with `isProjectDirectory()` function and `IGNORED_PROJECT_DIRS` denylist set.
 
 ### Testing
 
-- **New tests:** `GitHubOrgs.test.tsx` (4 tests — render, empty state, navigate to repos, navigate to bootstrap)
-- **New tests:** `GitHubRepos.test.tsx` (5 tests — personal repos render, org repos render, back to orgs from personal, back to orgs from org, empty state)
+- **New tests:** `projectUtils.test.ts` (6 tests — all denylist entries, real project names pass through)
+- **New tests:** `Projects.test.tsx` (8 tests — render list, empty state, Adicionar Repositórios CTA from header and empty state, safe remove modal, tech dirs hidden, deleteProject called on confirm)
+- **Updated tests:** `GitHubOrgs.test.tsx` (Voltar navigates to `/projects` instead of `/bootstrap`)
+- **Updated tests:** `GitHubRepos.test.tsx` (navigates to `/projects` after successful import)
 
 ### Validation
 
-- **Frontend:** 156/156 tests passing (27 suites), `tsc --noEmit` clean, `vite build` successful
+- **Frontend:** 171/171 tests passing (29 suites), `tsc --noEmit` clean, `vite build` successful
 - **Backend:** `go vet ./...`, `go test ./...`, `go build ./...` all passing
 
 ## [0.1.11] - 2026-07-02

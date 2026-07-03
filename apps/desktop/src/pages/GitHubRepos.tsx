@@ -51,9 +51,7 @@ export default function GitHubRepos() {
       if (failed.length > 0) {
         setToast({ message: `${success.length} importados, ${failed.length} falhas`, type: "error" });
       } else {
-        setToast({ message: `${success.length} projetos importados com sucesso!`, type: "success" });
-        setSelected(new Set());
-        load();
+        navigate("/projects");
       }
     } catch (e: any) {
       if (e instanceof TimeoutError) {

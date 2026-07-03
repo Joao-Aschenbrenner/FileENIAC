@@ -1,25 +1,25 @@
 // SPDX-License-Identifier: MIT
 import { useEffect, useState } from "react";
-import { listProjects, deleteProject, createProject } from "../api/client";
-
+import { useNavigate } from "react-router-dom";
+import { listProjects, deleteProject } from "../api/client";
+import { isProjectDirectory } from "../lib/projectUtils";
 import { Loader } from "../components/ui/Loader";
 import { ErrorState } from "../components/ui/ErrorState";
 
 export default function Projects() {
+  const navigate = useNavigate();
   const [projects, setProjects] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [showForm, setShowForm] = useState(false);
-  const [creating, setCreating] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
-  const [form, setForm] = useState({ name: "", local_path: "", remote_path: "/", branch: "main" });
+  const [deleteFiles, setDeleteFiles] = useState(false);
 
   function loadProjects() {
     setLoading(true);
     setError("");
     const wsPath = localStorage.getItem("eniac_ws_path") || "";
     listProjects(wsPath)
-      .then(setProjects)
+      .then((data) => setProjects(Array.isArray(data) ? data.filter((p) => !isProjectDirectory(p.name)) : []))
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
   }
@@ -31,26 +31,12 @@ export default function Projects() {
   if (loading) return <Loader text="Carregando projetos..." />;
   if (error) return <ErrorState message={error} onRetry={loadProjects} />;
 
-  async function handleCreate() {
-    if (creating) return;
-    setCreating(true);
-    const wsPath = localStorage.getItem("eniac_ws_path") || "";
-    try {
-      await createProject(wsPath, form);
-      setShowForm(false);
-      setForm({ name: "", local_path: "", remote_path: "/", branch: "main" });
-      loadProjects();
-    } catch (e: any) {
-      setError(e.message);
-    }
-    setCreating(false);
-  }
-
   async function handleDelete(name: string) {
     const wsPath = localStorage.getItem("eniac_ws_path") || "";
     try {
       await deleteProject(wsPath, name);
       setDeleteConfirm(null);
+      setDeleteFiles(false);
       loadProjects();
     } catch (e: any) {
       setError(e.message);
@@ -63,10 +49,10 @@ export default function Projects() {
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-bold text-gray-800">Projetos</h2>
         <button
-          onClick={() => setShowForm(!showForm)}
+          onClick={() => navigate("/github/orgs")}
           className="px-4 py-2 bg-eniac-600 text-white text-sm rounded-lg font-medium hover:bg-eniac-700 transition-colors"
         >
-          {showForm ? "Cancelar" : "+ Novo Projeto"}
+          + Adicionar Repositórios
         </button>
       </div>
 
@@ -76,56 +62,18 @@ export default function Projects() {
         </div>
       )}
 
-      {showForm && (
-        <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm mb-6">
-          <h3 className="font-semibold text-gray-700 mb-4">Novo Projeto</h3>
-          <div className="grid grid-cols-2 gap-4 mb-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-600 mb-1">Nome</label>
-              <input
-                type="text" value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-eniac-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-600 mb-1">Caminho Local</label>
-              <input
-                type="text" value={form.local_path}
-                onChange={(e) => setForm({ ...form, local_path: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-eniac-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-600 mb-1">Caminho Remoto</label>
-              <input
-                type="text" value={form.remote_path}
-                onChange={(e) => setForm({ ...form, remote_path: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-eniac-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-600 mb-1">Branch</label>
-              <input
-                type="text" value={form.branch}
-                onChange={(e) => setForm({ ...form, branch: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-eniac-500"
-              />
-            </div>
-          </div>
-          <button
-            onClick={handleCreate}
-            disabled={creating}
-            className="px-4 py-2 bg-eniac-600 text-white text-sm rounded-lg font-medium hover:bg-eniac-700 transition-colors disabled:opacity-50"
-          >
-            {creating ? "Salvando..." : "Salvar Projeto"}
-          </button>
-        </div>
-      )}
-
       {projects.length === 0 ? (
-        <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
-          <p className="text-gray-500 text-sm">Nenhum projeto cadastrado.</p>
+        <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
+          <h3 className="text-lg font-semibold text-gray-700 mb-2">Nenhum repositorio adicionado</h3>
+          <p className="text-sm text-gray-500 mb-6">
+            Importe repositorios do GitHub para comecar a gerenciar seus projetos.
+          </p>
+          <button
+            onClick={() => navigate("/github/orgs")}
+            className="px-6 py-3 bg-eniac-600 text-white rounded-lg font-medium hover:bg-eniac-700 transition-colors"
+          >
+            Adicionar Repositórios
+          </button>
         </div>
       ) : (
         <div className="space-y-3">
@@ -164,12 +112,23 @@ export default function Projects() {
 
       {deleteConfirm !== null && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/40" onClick={() => setDeleteConfirm(null)} />
+          <div className="absolute inset-0 bg-black/40" onClick={() => { setDeleteConfirm(null); setDeleteFiles(false); }} />
           <div className="relative bg-white rounded-xl shadow-2xl p-6 w-full max-w-sm mx-4">
             <h3 className="font-semibold text-gray-800 mb-2">Remover Projeto</h3>
-            <p className="text-sm text-gray-600 mb-4">Tem certeza que deseja remover o projeto "{deleteConfirm}"? Servidores e histórico associados também serão removidos.</p>
+            <p className="text-sm text-gray-600 mb-4">
+              Isso remove o projeto &ldquo;{deleteConfirm}&rdquo; da lista do FileENIAC, mas nao apaga os arquivos locais.
+            </p>
+            <label className="flex items-center gap-2 mb-4 text-sm text-gray-600 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={deleteFiles}
+                onChange={(e) => setDeleteFiles(e.target.checked)}
+                className="rounded border-gray-300 text-red-600 focus:ring-red-500"
+              />
+              Tambem apagar arquivos locais
+            </label>
             <div className="flex gap-3">
-              <button onClick={() => setDeleteConfirm(null)} className="flex-1 py-2 border border-gray-300 text-sm rounded-lg hover:bg-gray-50">Cancelar</button>
+              <button onClick={() => { setDeleteConfirm(null); setDeleteFiles(false); }} className="flex-1 py-2 border border-gray-300 text-sm rounded-lg hover:bg-gray-50">Cancelar</button>
               <button onClick={() => handleDelete(deleteConfirm)} className="flex-1 py-2 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700">Remover</button>
             </div>
           </div>
