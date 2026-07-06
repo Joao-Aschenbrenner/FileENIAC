@@ -205,7 +205,7 @@ export default function Onboarding() {
     setError("");
     try {
       await enterWorkspace(path);
-      navigate("/bootstrap");
+      navigate("/configurar");
     } catch (e: any) {
       setError(e.message || "Nao foi possivel entrar no workspace.");
     }

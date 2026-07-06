@@ -5,6 +5,23 @@ All notable changes to FileENIAC will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+### Changed
+
+- Centralized workspace, provider, and server setup into the Configure screen.
+- Restored GitLab visibility in environment configuration.
+- Added FTPS/FTP server setup entry to Configure.
+- Removed redundant GitHub sidebar entry.
+- Added switch workspace action to Configure.
+- Replaced colorful sidebar icons with a consistent professional SVG icon set.
+
+### Fixed
+
+- Fixed missing GitLab configuration card.
+- Fixed confusing split between environment configuration and server setup.
+- Fixed missing navigation back to workspace selection.
+
 ## [0.2.0] - 2026-07-02
 
 ### UX Flow Reorganization: Workspace, Providers and Projects
