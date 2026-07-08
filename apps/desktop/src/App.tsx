@@ -1,5 +1,8 @@
 // SPDX-License-Identifier: MIT
+import { useEffect } from "react";
 import { Routes, Route } from "react-router-dom";
+import { useUpdateCheck } from "./hooks/useUpdateCheck";
+import UpdateModal from "./components/UpdateModal";
 import ErrorBoundary from "./components/ErrorBoundary";
 import Layout from "./components/Layout";
 import Onboarding from "./pages/Onboarding";
@@ -19,8 +22,18 @@ import GitHubRepos from "./pages/GitHubRepos";
 import WorkspaceBootstrap from "./pages/WorkspaceBootstrap";
 
 export default function App() {
+  const { state, check, dismiss, startDownload } = useUpdateCheck();
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      check();
+    }, 5000);
+    return () => clearTimeout(timeout);
+  }, []);
+
   return (
     <ErrorBoundary>
+      <UpdateModal state={state} onDismiss={dismiss} onInstall={startDownload} />
       <Routes>
         <Route path="/" element={<Onboarding />} />
         <Route element={<Layout />}>

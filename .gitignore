@@ -36,4 +36,17 @@ Thumbs.db
 
 # Env
 .env
-*.env.local
+.env.*
+!.env.example
+
+# Signing keys
+*.key
+*.pem
+*.p12
+*.pfx
+
+# Local signing directory
+.tauri/
+
+# Local checksums
+CHECKSUMS-local*.txt

@@ -7,8 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Added
+
+- Added Tauri auto-update support with signed update validation.
+- Added startup update check with global update modal.
+- Added updater signing configuration.
+- Added release workflow documentation for signed updater builds.
+
+### Security
+
+- Added signed update validation using updater public key.
+
 ### Changed
 
+- Prepared release process for updater metadata and signed installer assets.
 - Centralized workspace, provider, and server setup into the Configure screen.
 - Restored GitLab visibility in environment configuration.
 - Added FTPS/FTP server setup entry to Configure.

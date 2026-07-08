@@ -40,5 +40,19 @@
         "type": "embedBootstrapper"
       }
     }
+  },
+  "plugins": {
+    "updater": {
+      "active": true,
+      "dialog": false,
+      "endpoints": [
+        "https://github.com/Joao-Aschenbrenner/FileENIAC/releases/latest/download/latest.json"
+      ],
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDU3NzM2MDY5RUE4MUIxNUUKUldSZXNZSHFhV0J6Vnl1dFIrUDBEVmVQdDVjR2JUNms1Wjlzc3JjaGVnMWZuTGh0ZnhISEQ3SHIK",
+      "publisher": "ENIAC Systems",
+      "windows": {
+        "installMode": "passive"
+      }
+    }
   }
 }

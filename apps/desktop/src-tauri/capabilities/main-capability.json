@@ -13,6 +13,7 @@
     "shell:allow-stdin-write",
     "allow-get-backend-info",
     "allow-get-diagnostics",
-    "allow-get-sidecar-log-path"
+    "allow-get-sidecar-log-path",
+    "updater:default"
   ]
 }

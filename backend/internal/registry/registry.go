@@ -69,12 +69,22 @@ func AddProject(ctx *workspace.Context, p *Project) (int64, error) {
 }
 
 func RemoveProject(ctx *workspace.Context, projectID int64) error {
-	_, err := ctx.DB.Exec("DELETE FROM servers WHERE project_id = ?", projectID)
-	if err != nil {
-		return fmt.Errorf("failed to remove servers: %w", err)
+	tables := []string{
+		"deploy_logs",
+		"rollback_logs",
+		"mirror_snapshots",
+		"sync_manifests",
+		"repositories",
+		"servers",
+	}
+	for _, table := range tables {
+		_, err := ctx.DB.Exec("DELETE FROM "+table+" WHERE project_id = ?", projectID)
+		if err != nil {
+			return fmt.Errorf("failed to remove %s: %w", table, err)
+		}
 	}
 
-	_, err = ctx.DB.Exec("DELETE FROM projects WHERE id = ?", projectID)
+	_, err := ctx.DB.Exec("DELETE FROM projects WHERE id = ?", projectID)
 	if err != nil {
 		return fmt.Errorf("failed to remove project: %w", err)
 	}
