@@ -455,11 +455,38 @@ func (s *Server) handleProjectByID() http.HandlerFunc {
 				respondError(w, http.StatusNotFound, err.Error())
 				return
 			}
+
+			deleteLocalFiles := false
+			if r.URL.Query().Get("deleteLocalFiles") == "true" {
+				deleteLocalFiles = true
+			}
+			if r.Method == http.MethodDelete && r.Body != nil {
+				var body struct {
+					DeleteLocalFiles bool `json:"deleteLocalFiles"`
+				}
+				if err := json.NewDecoder(r.Body).Decode(&body); err == nil {
+					deleteLocalFiles = body.DeleteLocalFiles
+				}
+			}
+
+			localResult := "skipped"
+			if deleteLocalFiles {
+				if err := registry.DeleteLocalPath(p.LocalPath, ctx.Workspace.Path); err != nil {
+					localResult = "failed: " + err.Error()
+				} else {
+					localResult = "deleted"
+				}
+			}
+
 			if err := registry.RemoveProject(ctx, p.ID); err != nil {
 				respondError(w, http.StatusInternalServerError, err.Error())
 				return
 			}
-			respond(w, http.StatusOK, map[string]string{"status": "removed"})
+
+			respond(w, http.StatusOK, map[string]string{
+				"status":      "removed",
+				"local_files": localResult,
+			})
 		default:
 			respondError(w, http.StatusMethodNotAllowed, "method not allowed")
 		}

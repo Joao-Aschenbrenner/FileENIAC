@@ -5,6 +5,18 @@ All notable changes to FileENIAC will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v0.2.1
+
+### Fixed
+
+- Fixed project removal flow when deleting a project already attached to the workspace.
+- Clarified that removing a project from FileENIAC does not delete the remote GitHub/GitLab repository.
+- Improved safe local folder deletion handling.
+
+### Added
+
+- First signed updater test release after v0.2.0.
+
 ## Unreleased
 
 ### Added

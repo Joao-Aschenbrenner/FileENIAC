@@ -195,8 +195,14 @@ export async function createProject(wsPath: string, project: any): Promise<any> 
   return post(`/projects?workspace=${encodeURIComponent(wsPath)}`, project);
 }
 
-export async function deleteProject(wsPath: string, name: string): Promise<any> {
-  return del(`/projects/${encodeURIComponent(name)}?workspace=${encodeURIComponent(wsPath)}`);
+export async function deleteProject(
+  wsPath: string,
+  name: string,
+  options: { deleteLocalFiles?: boolean } = {}
+): Promise<any> {
+  const params = new URLSearchParams({ workspace: wsPath });
+  if (options.deleteLocalFiles) params.set("deleteLocalFiles", "true");
+  return del(`/projects/${encodeURIComponent(name)}?${params.toString()}`);
 }
 
 export async function listServers(wsPath: string, project?: string): Promise<any[]> {

@@ -13,6 +13,8 @@ export default function Projects() {
   const [error, setError] = useState("");
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [deleteFiles, setDeleteFiles] = useState(false);
+  const [isRemoving, setIsRemoving] = useState(false);
+  const [success, setSuccess] = useState("");
 
   function loadProjects() {
     setLoading(true);
@@ -28,19 +30,55 @@ export default function Projects() {
     loadProjects();
   }, []);
 
+  useEffect(() => {
+    if (!success) return;
+    const t = setTimeout(() => setSuccess(""), 4000);
+    return () => clearTimeout(t);
+  }, [success]);
+
   if (loading) return <Loader text="Carregando projetos..." />;
   if (error) return <ErrorState message={error} onRetry={loadProjects} />;
 
-  async function handleDelete(name: string) {
+  function openDeleteModal(name: string) {
+    setDeleteConfirm(name);
+    setDeleteFiles(false);
+    setError("");
+  }
+
+  function closeDeleteModal() {
+    if (isRemoving) return;
+    setDeleteConfirm(null);
+    setDeleteFiles(false);
+  }
+
+  async function handleDelete() {
+    if (!deleteConfirm) return;
     const wsPath = localStorage.getItem("eniac_ws_path") || "";
+    const name = deleteConfirm;
+    setIsRemoving(true);
+    setError("");
     try {
-      await deleteProject(wsPath, name);
+      const res = await deleteProject(wsPath, name, { deleteLocalFiles: deleteFiles });
+      const localResult = res?.local_files ?? "skipped";
       setDeleteConfirm(null);
       setDeleteFiles(false);
       loadProjects();
+      if (deleteFiles && localResult === "deleted") {
+        setSuccess(`Projeto removido e pasta local apagada.`);
+      } else if (deleteFiles && String(localResult).startsWith("failed")) {
+        setSuccess(`Projeto removido do workspace, mas a pasta local nao pode ser apagada.`);
+      } else {
+        setSuccess(`Projeto removido do workspace.`);
+      }
     } catch (e: any) {
-      setError(e.message);
-      setDeleteConfirm(null);
+      const msg = e?.message ?? "Erro ao remover projeto";
+      if (msg.includes("FOREIGN KEY")) {
+        setError("Nao consegui remover este projeto. Tente novamente.");
+      } else {
+        setError(msg);
+      }
+    } finally {
+      setIsRemoving(false);
     }
   }
 
@@ -55,6 +93,12 @@ export default function Projects() {
           + Adicionar Repositórios
         </button>
       </div>
+
+      {success && (
+        <div className="mb-4 bg-green-50 border border-green-200 text-green-800 rounded-lg p-3 text-sm">
+          {success}
+        </div>
+      )}
 
       {error && (
         <div className="mb-4 text-red-600 bg-red-50 border border-red-200 rounded-lg p-3 text-sm">
@@ -99,7 +143,7 @@ export default function Projects() {
                   {p.divergence_status}
                 </span>
                 <button
-                  onClick={() => setDeleteConfirm(p.name)}
+                  onClick={() => openDeleteModal(p.name)}
                   className="text-xs text-red-600 hover:text-red-800 transition-colors"
                 >
                   Remover
@@ -112,24 +156,49 @@ export default function Projects() {
 
       {deleteConfirm !== null && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/40" onClick={() => { setDeleteConfirm(null); setDeleteFiles(false); }} />
+          <div className="absolute inset-0 bg-black/40" onClick={closeDeleteModal} />
           <div className="relative bg-white rounded-xl shadow-2xl p-6 w-full max-w-sm mx-4">
-            <h3 className="font-semibold text-gray-800 mb-2">Remover Projeto</h3>
+            <h3 className="font-semibold text-gray-800 mb-2">Remover projeto do workspace?</h3>
             <p className="text-sm text-gray-600 mb-4">
-              Isso remove o projeto &ldquo;{deleteConfirm}&rdquo; da lista do FileENIAC, mas nao apaga os arquivos locais.
+              Isso remove o projeto &ldquo;{deleteConfirm}&rdquo; da lista do FileENIAC. O repositorio no
+              GitHub/GitLab nao sera apagado.
             </p>
-            <label className="flex items-center gap-2 mb-4 text-sm text-gray-600 cursor-pointer">
+            <label className="flex items-start gap-2 mb-2 text-sm text-gray-600 cursor-pointer">
               <input
                 type="checkbox"
                 checked={deleteFiles}
                 onChange={(e) => setDeleteFiles(e.target.checked)}
-                className="rounded border-gray-300 text-red-600 focus:ring-red-500"
+                disabled={isRemoving}
+                className="mt-0.5 rounded border-gray-300 text-red-600 focus:ring-red-500"
               />
-              Tambem apagar arquivos locais
+              <span>Tambem apagar a pasta local deste projeto</span>
             </label>
+            {deleteFiles && (
+              <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded p-2 mb-4">
+                Esta acao apagara os arquivos locais do projeto neste computador. O repositorio remoto no
+                GitHub/GitLab nao sera apagado.
+              </p>
+            )}
+            {!deleteFiles && <div className="mb-4" />}
             <div className="flex gap-3">
-              <button onClick={() => { setDeleteConfirm(null); setDeleteFiles(false); }} className="flex-1 py-2 border border-gray-300 text-sm rounded-lg hover:bg-gray-50">Cancelar</button>
-              <button onClick={() => handleDelete(deleteConfirm)} className="flex-1 py-2 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700">Remover</button>
+              <button
+                onClick={closeDeleteModal}
+                disabled={isRemoving}
+                className="flex-1 py-2 border border-gray-300 text-sm rounded-lg hover:bg-gray-50 disabled:opacity-50"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={isRemoving}
+                className="flex-1 py-2 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700 disabled:opacity-50"
+              >
+                {isRemoving
+                  ? "Removendo..."
+                  : deleteFiles
+                  ? "Remover e apagar pasta local"
+                  : "Remover do workspace"}
+              </button>
             </div>
           </div>
         </div>

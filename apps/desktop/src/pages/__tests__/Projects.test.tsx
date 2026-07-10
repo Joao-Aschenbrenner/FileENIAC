@@ -82,15 +82,32 @@ describe('Projects', () => {
     });
   });
 
-  it('shows safe remove modal with delete files checkbox', async () => {
+  it('shows remove modal without mentioning remote deletion', async () => {
     renderWithRoutes();
     await waitFor(() => expect(screen.getByText('FileENIAC')).toBeInTheDocument());
 
     fireEvent.click(screen.getAllByText('Remover')[0]);
     await waitFor(() => {
-      expect(screen.getByText(/nao apaga os arquivos locais/)).toBeInTheDocument();
+      expect(screen.getByText(/Remover projeto do workspace/)).toBeInTheDocument();
     });
-    expect(screen.getByText('Tambem apagar arquivos locais')).toBeInTheDocument();
+    expect(screen.getByText(/nao sera apagado/)).toBeInTheDocument();
+    expect(screen.getByText('Tambem apagar a pasta local deste projeto')).toBeInTheDocument();
+    expect(screen.queryByText(/Excluir da plataforma|Excluir do GitHub|Apagar repositorio remoto/)).toBeNull();
+  });
+
+  it('shows local delete warning when checkbox is checked', async () => {
+    renderWithRoutes();
+    await waitFor(() => expect(screen.getByText('FileENIAC')).toBeInTheDocument());
+
+    fireEvent.click(screen.getAllByText('Remover')[0]);
+    await waitFor(() => expect(screen.getByText(/Remover projeto do workspace/)).toBeInTheDocument());
+
+    const checkbox = screen.getByRole('checkbox');
+    fireEvent.click(checkbox);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Esta acao apagara os arquivos locais/)).toBeInTheDocument();
+    });
   });
 
   it('ignores technical directories', async () => {
@@ -108,18 +125,50 @@ describe('Projects', () => {
     expect(screen.queryByText('node_modules')).not.toBeInTheDocument();
   });
 
-  it('calls deleteProject when confirming removal', async () => {
-    vi.mocked(deleteProject).mockResolvedValue({});
+  it('calls deleteProject with deleteLocalFiles=false by default', async () => {
+    vi.mocked(deleteProject).mockResolvedValue({ status: 'removed', local_files: 'skipped' });
     renderWithRoutes();
     await waitFor(() => expect(screen.getByText('FileENIAC')).toBeInTheDocument());
 
     fireEvent.click(screen.getAllByText('Remover')[0]);
-    await waitFor(() => expect(screen.getByText(/remove o projeto/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/Remover projeto do workspace/)).toBeInTheDocument());
 
-    const modalButtons = screen.getAllByText('Remover');
-    fireEvent.click(modalButtons[modalButtons.length - 1]);
+    const confirmButton = screen.getByText('Remover do workspace');
+    fireEvent.click(confirmButton);
     await waitFor(() => {
-      expect(deleteProject).toHaveBeenCalledWith('/workspace', 'FileENIAC');
+      expect(deleteProject).toHaveBeenCalledWith('/workspace', 'FileENIAC', { deleteLocalFiles: false });
+    });
+  });
+
+  it('calls deleteProject with deleteLocalFiles=true when checkbox is checked', async () => {
+    vi.mocked(deleteProject).mockResolvedValue({ status: 'removed', local_files: 'deleted' });
+    renderWithRoutes();
+    await waitFor(() => expect(screen.getByText('FileENIAC')).toBeInTheDocument());
+
+    fireEvent.click(screen.getAllByText('Remover')[0]);
+    await waitFor(() => expect(screen.getByText(/Remover projeto do workspace/)).toBeInTheDocument());
+
+    const checkbox = screen.getByRole('checkbox');
+    fireEvent.click(checkbox);
+
+    const confirmButton = screen.getByText('Remover e apagar pasta local');
+    fireEvent.click(confirmButton);
+    await waitFor(() => {
+      expect(deleteProject).toHaveBeenCalledWith('/workspace', 'FileENIAC', { deleteLocalFiles: true });
+    });
+  });
+
+  it('shows success message after successful removal', async () => {
+    vi.mocked(deleteProject).mockResolvedValue({ status: 'removed', local_files: 'skipped' });
+    renderWithRoutes();
+    await waitFor(() => expect(screen.getByText('FileENIAC')).toBeInTheDocument());
+
+    fireEvent.click(screen.getAllByText('Remover')[0]);
+    await waitFor(() => expect(screen.getByText(/Remover projeto do workspace/)).toBeInTheDocument());
+
+    fireEvent.click(screen.getByText('Remover do workspace'));
+    await waitFor(() => {
+      expect(screen.getByText(/Projeto removido do workspace/)).toBeInTheDocument();
     });
   });
 });

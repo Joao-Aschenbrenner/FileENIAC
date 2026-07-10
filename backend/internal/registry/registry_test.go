@@ -172,3 +172,112 @@ func TestAddServer(t *testing.T) {
 		t.Fatalf("GetServer failed: %v", err)
 	}
 }
+
+func TestCanDeleteLocalPath_InsideWorkspace(t *testing.T) {
+	tmpDir := t.TempDir()
+	wsPath := filepath.Join(tmpDir, "testws")
+	if err := os.MkdirAll(wsPath, 0755); err != nil {
+		t.Fatalf("mkdir: %v", err)
+	}
+	projectDir := filepath.Join(wsPath, "my-project")
+	if err := os.MkdirAll(projectDir, 0755); err != nil {
+		t.Fatalf("mkdir project: %v", err)
+	}
+
+	if err := CanDeleteLocalPath(projectDir, wsPath); err != nil {
+		t.Errorf("expected safe path, got: %v", err)
+	}
+}
+
+func TestCanDeleteLocalPath_OutsideWorkspace(t *testing.T) {
+	tmpDir := t.TempDir()
+	wsPath := filepath.Join(tmpDir, "testws")
+	if err := os.MkdirAll(wsPath, 0755); err != nil {
+		t.Fatalf("mkdir: %v", err)
+	}
+
+	outsideDir := filepath.Join(tmpDir, "outside")
+	if err := os.MkdirAll(outsideDir, 0755); err != nil {
+		t.Fatalf("mkdir outside: %v", err)
+	}
+
+	if err := CanDeleteLocalPath(outsideDir, wsPath); err == nil {
+		t.Error("expected error for path outside workspace")
+	}
+}
+
+func TestCanDeleteLocalPath_ReservedDir(t *testing.T) {
+	tmpDir := t.TempDir()
+	wsPath := filepath.Join(tmpDir, "testws")
+	if err := os.MkdirAll(wsPath, 0755); err != nil {
+		t.Fatalf("mkdir: %v", err)
+	}
+
+	for _, reserved := range []string{".git", ".github", ".eniac", "node_modules"} {
+		d := filepath.Join(wsPath, reserved)
+		if err := os.MkdirAll(d, 0755); err != nil {
+			t.Fatalf("mkdir %s: %v", reserved, err)
+		}
+		if err := CanDeleteLocalPath(d, wsPath); err == nil {
+			t.Errorf("expected error for reserved dir %s", reserved)
+		}
+	}
+}
+
+func TestCanDeleteLocalPath_Empty(t *testing.T) {
+	if err := CanDeleteLocalPath("", ""); err == nil {
+		t.Error("expected error for empty path")
+	}
+}
+
+func TestCanDeleteLocalPath_NonExistentOK(t *testing.T) {
+	tmpDir := t.TempDir()
+	wsPath := filepath.Join(tmpDir, "testws")
+	if err := os.MkdirAll(wsPath, 0755); err != nil {
+		t.Fatalf("mkdir: %v", err)
+	}
+	missing := filepath.Join(wsPath, "does-not-exist")
+	if err := CanDeleteLocalPath(missing, wsPath); err != nil {
+		t.Errorf("expected no error for non-existent path inside workspace, got: %v", err)
+	}
+}
+
+func TestDeleteLocalPath_InsideWorkspace(t *testing.T) {
+	tmpDir := t.TempDir()
+	wsPath := filepath.Join(tmpDir, "testws")
+	if err := os.MkdirAll(wsPath, 0755); err != nil {
+		t.Fatalf("mkdir: %v", err)
+	}
+	projectDir := filepath.Join(wsPath, "to-delete")
+	if err := os.MkdirAll(filepath.Join(projectDir, "sub"), 0755); err != nil {
+		t.Fatalf("mkdir: %v", err)
+	}
+	if err := os.WriteFile(filepath.Join(projectDir, "file.txt"), []byte("x"), 0644); err != nil {
+		t.Fatalf("write: %v", err)
+	}
+
+	if err := DeleteLocalPath(projectDir, wsPath); err != nil {
+		t.Fatalf("DeleteLocalPath failed: %v", err)
+	}
+	if _, err := os.Stat(projectDir); !os.IsNotExist(err) {
+		t.Errorf("expected folder deleted, got stat err: %v", err)
+	}
+}
+
+func TestDeleteLocalPath_OutsideWorkspaceBlocked(t *testing.T) {
+	tmpDir := t.TempDir()
+	wsPath := filepath.Join(tmpDir, "testws")
+	if err := os.MkdirAll(wsPath, 0755); err != nil {
+		t.Fatalf("mkdir: %v", err)
+	}
+	outside := filepath.Join(tmpDir, "outside")
+	if err := os.MkdirAll(outside, 0755); err != nil {
+		t.Fatalf("mkdir: %v", err)
+	}
+	if err := DeleteLocalPath(outside, wsPath); err == nil {
+		t.Error("expected error deleting path outside workspace")
+	}
+	if _, err := os.Stat(outside); err != nil {
+		t.Errorf("outside folder should still exist: %v", err)
+	}
+}

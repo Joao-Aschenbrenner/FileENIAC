@@ -45,6 +45,16 @@
 10. Aguardar instalação + reinício
 11. Confirmar que app abriu na versão 0.2.1
 
+## Hotfix — Remoção de Projeto
+
+| Teste | Resultado | Observação |
+|---|---|---|
+| Remover só do workspace | | |
+| Remover com apagar local | | |
+| Pasta local protegida não quebra app | | |
+| Repo remoto não é apagado | | |
+| Erro amigável | | |
+
 ## Decisão
 
 - [ ] APROVADO

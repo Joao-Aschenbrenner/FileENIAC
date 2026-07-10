@@ -2,13 +2,47 @@
 package registry
 
 import (
+	"errors"
 	"fmt"
+	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/ENIACSystems/FileENIAC/backend/internal/log"
 	"github.com/ENIACSystems/FileENIAC/backend/internal/vault"
 	"github.com/ENIACSystems/FileENIAC/backend/internal/workspace"
 	"go.uber.org/zap"
 )
+
+var ErrUnsafeLocalPath = errors.New("unsafe local path for deletion")
+var ErrLocalPathNotInWorkspace = errors.New("local path is not inside the active workspace")
+var ErrLocalPathIsReserved = errors.New("local path is a reserved directory")
+
+var reservedProjectDirs = map[string]bool{
+	".git":         true,
+	".github":      true,
+	".eniac":       true,
+	".vscode":      true,
+	".idea":        true,
+	"src":          true,
+	"app":          true,
+	"core":         true,
+	"public":       true,
+	"static":       true,
+	"docs":         true,
+	"scripts":      true,
+	"tests":        true,
+	"vendor":       true,
+	"node_modules": true,
+	"dist":         true,
+	"build":        true,
+	"target":       true,
+	"__pycache__":  true,
+}
+
+type RemoveProjectOptions struct {
+	DeleteLocalFiles bool
+}
 
 type Project struct {
 	ID               int64  `json:"id"`
@@ -69,6 +103,10 @@ func AddProject(ctx *workspace.Context, p *Project) (int64, error) {
 }
 
 func RemoveProject(ctx *workspace.Context, projectID int64) error {
+	return RemoveProjectWithOptions(ctx, projectID, RemoveProjectOptions{})
+}
+
+func RemoveProjectWithOptions(ctx *workspace.Context, projectID int64, opts RemoveProjectOptions) error {
 	tables := []string{
 		"deploy_logs",
 		"rollback_logs",
@@ -90,6 +128,86 @@ func RemoveProject(ctx *workspace.Context, projectID int64) error {
 	}
 
 	log.L().Info("project removed", zap.Int64("id", projectID))
+	return nil
+}
+
+// CanDeleteLocalPath performs safety checks before allowing local folder deletion.
+// Returns nil if safe, otherwise an error explaining why.
+func CanDeleteLocalPath(localPath, workspaceRoot string) error {
+	if localPath == "" {
+		return ErrUnsafeLocalPath
+	}
+
+	abs, err := filepath.Abs(localPath)
+	if err != nil {
+		return ErrUnsafeLocalPath
+	}
+
+	if abs == "" || abs == "/" || abs == "\\" {
+		return ErrUnsafeLocalPath
+	}
+
+	if len(abs) >= 3 && abs[1] == ':' {
+		drive := strings.ToUpper(string(abs[0]))
+		if abs[2] == '\\' && len(abs) == 3 {
+			return ErrUnsafeLocalPath
+		}
+		if len(abs) <= 3 {
+			_ = drive
+			return ErrUnsafeLocalPath
+		}
+	}
+
+	base := filepath.Base(abs)
+	if reservedProjectDirs[strings.ToLower(base)] {
+		return ErrLocalPathIsReserved
+	}
+
+	if workspaceRoot != "" {
+		wsAbs, err := filepath.Abs(workspaceRoot)
+		if err != nil {
+			return ErrLocalPathNotInWorkspace
+		}
+		rel, err := filepath.Rel(wsAbs, abs)
+		if err != nil || strings.HasPrefix(rel, "..") || rel == ".." {
+			return ErrLocalPathNotInWorkspace
+		}
+	}
+
+	info, err := os.Stat(abs)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil
+		}
+		return ErrUnsafeLocalPath
+	}
+	if !info.IsDir() {
+		return ErrUnsafeLocalPath
+	}
+
+	return nil
+}
+
+// DeleteLocalPath removes a local folder after safety validation.
+// Caller should still call RemoveProject/RemoveProjectWithOptions separately
+// to remove the project record from the workspace DB.
+func DeleteLocalPath(localPath, workspaceRoot string) error {
+	if err := CanDeleteLocalPath(localPath, workspaceRoot); err != nil {
+		return err
+	}
+	if localPath == "" {
+		return nil
+	}
+	abs, _ := filepath.Abs(localPath)
+	if _, err := os.Stat(abs); err != nil {
+		if os.IsNotExist(err) {
+			return nil
+		}
+		return err
+	}
+	if err := os.RemoveAll(abs); err != nil {
+		return fmt.Errorf("failed to delete local folder: %w", err)
+	}
 	return nil
 }
 
